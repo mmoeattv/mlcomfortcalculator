@@ -197,8 +197,8 @@ st.markdown("""
 # ==========================================
 # 2. MODEL LOADING
 # ==========================================
-PMV_PATH = r"D:\my phd monthly database\my database monthly pmv and ppd\web_deployed_models\model_pmv_raw.pkl"
-PPD_PATH = r"D:\my phd monthly database\my database monthly pmv and ppd\web_deployed_models\model_ppd_raw.pkl"
+PMV_PATH = r"XGBoost_PMV_model.pkl"
+PPD_PATH = r"XGBoost_PPD_model.pkl"
 
 @st.cache_resource
 def load_research_models():
@@ -583,3 +583,4 @@ with col3:
     """, unsafe_allow_html=True)
 
 # ── end of app ──
+
