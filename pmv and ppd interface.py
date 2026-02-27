@@ -220,7 +220,7 @@ def get_predictions(wall_w, depth, orient, wwr, month_str):
     month_map = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
                  "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
     features = np.array([[month_map[month_str], wall_w, depth, orient_map[orient], wwr]])
-    if pmv_model and ppd_model:
+    if pmv_model is not None and ppd_model is not None::
         pred_pmv = pmv_model.predict(features)[0]
         pred_ppd = ppd_model.predict(features)[0]
         return round(float(pred_pmv), 2), round(float(pred_ppd), 1)
@@ -583,4 +583,5 @@ with col3:
     """, unsafe_allow_html=True)
 
 # ── end of app ──
+
 
