@@ -3,3 +3,4 @@ plotly
 numpy
 joblib
 scikit-learn
+xgboost
