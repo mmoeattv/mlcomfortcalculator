@@ -4,284 +4,130 @@ import numpy as np
 import joblib
 
 # ==========================================
-# 1. PAGE CONFIGURATION & STYLING
+# 1. PAGE CONFIGURATION & COMPACT STYLING
 # ==========================================
-st.set_page_config(page_title="Thermal Comfort AI - PhD", layout="wide")
+st.set_page_config(page_title="Thermal Comfort AI - PhD", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
-.block-container {
+/* 1. COMPACT LAYOUT - Eliminate scrolling */
+.main .block-container {
     padding-top: 1rem !important;
-    padding-bottom: 0.5rem !important;
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
-    max-width: 100% !important;
+    padding-bottom: 0rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    max-width: 98% !important;
 }
+/* Hide scrollbars for a clean "Dashboard" feel if content fits */
+body { overflow: hidden; } 
+
 section[data-testid="stSidebar"] { display: none; }
-.stApp, body, [data-testid="stAppViewContainer"] {
-    background-color: #f5f7fa !important;
-}
-[data-testid="stHeader"] { background-color: #f5f7fa !important; }
+
+.stApp { background-color: #f8fafd !important; }
+
+/* Elegant Headers */
 h1 {
-    font-size: clamp(1.4rem, 2.2vw, 2rem) !important;
-    margin-bottom: 0.2rem !important;
+    font-size: 1.6rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
     color: #1a1a2e !important;
-    font-weight: 700 !important;
 }
-h2, h3 {
-    font-size: clamp(1rem, 1.4vw, 1.3rem) !important;
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.3rem !important;
-    color: #2c3e50 !important;
-    font-weight: 600 !important;
+h3 {
+    font-size: 1rem !important;
+    margin-bottom: 0.4rem !important;
+    color: #455a64 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
-p, div, span, label {
-    font-size: clamp(0.88rem, 1.1vw, 1.05rem) !important;
-    color: #333 !important;
-}
+
+/* Metric styling */
 div[data-testid="stMetricValue"] {
-    font-size: clamp(1.8rem, 2.5vw, 2.6rem) !important;
-    color: #0097a7 !important;
-    font-weight: 700 !important;
-    line-height: 1.1 !important;
+    font-size: 1.8rem !important;
+    color: #00796b !important;
 }
 div[data-testid="stMetric"] {
     background: #ffffff;
-    border: 2px solid #b2dfdb;
-    border-radius: 12px;
-    padding: 0.7rem 1rem 0.5rem !important;
-    margin-bottom: 0.7rem;
-    box-shadow: 0 2px 8px rgba(0,150,136,0.08);
+    border: 1px solid #e0e6ed;
+    padding: 0.4rem !important;
+    border-radius: 10px;
 }
-div[data-testid="stMetricLabel"] > div {
-    font-size: clamp(0.82rem, 1vw, 0.98rem) !important;
-    color: #00796b !important;
-    font-weight: 600 !important;
-}
-.description-text {
-    font-size: clamp(0.88rem, 1.1vw, 1rem) !important;
-    color: #555 !important;
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
-}
-div[data-testid="stSlider"] > div > div > div {
-    height: 8px !important;
-    border-radius: 4px !important;
-    background: #cfd8dc !important;
-}
-div[data-testid="stSlider"] > div > div > div > div {
-    background: linear-gradient(90deg, #00897b, #00bcd4) !important;
-    height: 8px !important;
-}
-div[data-testid="stSlider"] span[role="slider"] {
-    width: 28px !important;
-    height: 28px !important;
-    background: #00897b !important;
-    border: 4px solid #ffffff !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 0 3px #00897b55, 0 3px 10px rgba(0,0,0,0.2) !important;
-    top: -10px !important;
-    cursor: grab !important;
-}
-div[data-testid="stSlider"] span[role="slider"]:active {
-    background: #00695c !important;
-    cursor: grabbing !important;
-}
-div[data-testid="stSlider"] label {
-    font-size: clamp(0.88rem, 1.1vw, 1rem) !important;
-    color: #37474f !important;
-    font-weight: 600 !important;
-    margin-bottom: 4px !important;
-}
-div[data-testid="stSlider"] div[data-testid="stMarkdownContainer"] p {
-    font-size: clamp(0.78rem, 0.95vw, 0.9rem) !important;
-    color: #78909c !important;
-}
-div[data-testid="stSelectSlider"] label {
-    font-size: clamp(0.88rem, 1.1vw, 1rem) !important;
-    color: #37474f !important;
-    font-weight: 600 !important;
-}
-div[data-testid="stSelectSlider"] span[role="slider"] {
-    width: 28px !important;
-    height: 28px !important;
-    background: #00897b !important;
-    border: 4px solid #ffffff !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 0 3px #00897b55, 0 3px 10px rgba(0,0,0,0.2) !important;
-    top: -10px !important;
-}
-div[data-testid="stSelectbox"] label {
-    font-size: clamp(0.88rem, 1.1vw, 1rem) !important;
-    color: #37474f !important;
-    font-weight: 600 !important;
-}
-div[data-testid="stSelectbox"] > div > div {
-    background: #ffffff !important;
-    border: 1.5px solid #b0bec5 !important;
-    border-radius: 8px !important;
-    font-size: clamp(0.88rem, 1.1vw, 1rem) !important;
-}
-div[data-testid="column"]:first-child {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 1rem 1.1rem !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-}
-div[data-testid="column"]:last-child {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 1rem 1.1rem !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-}
-hr { margin: 0.6rem 0 !important; border-color: #e0e0e0 !important; }
-div[data-testid="column"] {
-    padding-left: 0.6rem !important;
-    padding-right: 0.6rem !important;
-}
-.feedback-btn-wrap {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 0.3rem;
-}
+
+/* FEEDBACK BUTTON FIX - Specific ID and z-index */
 .feedback-trigger {
     background: #00897b;
-    color: #ffffff !important;
+    color: white !important;
     border: none;
-    border-radius: 8px;
-    padding: 0.55rem 1.2rem;
-    font-size: clamp(0.85rem, 1.05vw, 0.98rem);
+    border-radius: 6px;
+    padding: 8px 16px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,137,123,0.25);
-    transition: background 0.2s;
+    transition: 0.3s;
 }
-.feedback-trigger:hover { background: #00695c; }
+.feedback-trigger:hover { background: #004d40; }
+
+/* Modal Overlay */
 #fb-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 9998;
+    background: rgba(0,0,0,0.6);
+    z-index: 10000;
     align-items: center;
     justify-content: center;
 }
 #fb-overlay.open { display: flex; }
 #fb-modal {
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.22);
-    width: min(680px, 92vw);
-    height: min(620px, 88vh);
-    display: flex;
-    flex-direction: column;
+    background: white;
+    width: 600px;
+    height: 500px;
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
-    z-index: 9999;
-}
-#fb-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1.1rem 0.6rem;
-    border-bottom: 1px solid #e0e0e0;
-    background: #f5f7fa;
-}
-#fb-modal-header span { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
-#fb-close {
-    background: none; border: none; font-size: 1.4rem;
-    cursor: pointer; color: #607d8b; line-height: 1;
-    padding: 0 0.2rem; transition: color 0.15s;
-}
-#fb-close:hover { color: #c0392b; }
-#fb-modal iframe { flex: 1; border: none; width: 100%; }
-
-/* ── Insight cards — horizontal bottom strip ── */
-.insights-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-    margin-top: 0.9rem;
-    width: 100%;
-}
-.insight-card {
-    flex: 1 1 200px;
-    border-radius: 12px;
-    padding: 0.65rem 0.85rem 0.6rem;
-    font-size: clamp(0.74rem, 0.9vw, 0.84rem) !important;
-    line-height: 1.45;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    min-width: 160px;
-    max-width: 320px;
 }
-.insight-card .ic-header {
+#fb-modal iframe { flex: 1; border: none; }
+#close-btn { 
+    position: absolute; right: 10px; top: 10px; 
+    cursor: pointer; font-weight: bold; font-size: 20px; 
+}
+
+/* Insights Strip - Smaller and more compact */
+.insights-strip {
     display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-bottom: 0.15rem;
+    gap: 10px;
+    margin-top: 5px;
 }
-.insight-card .ic-icon { font-size: 1.05rem; flex-shrink: 0; line-height: 1; }
-.insight-card .ic-title {
-    font-size: clamp(0.74rem, 0.88vw, 0.83rem) !important;
-    font-weight: 700 !important;
-    color: #2c3e50 !important;
-    line-height: 1.2;
-}
-.insight-card .ic-body {
-    font-size: clamp(0.7rem, 0.84vw, 0.79rem) !important;
-    color: #455a64 !important;
-    line-height: 1.45;
-}
-.insight-card .ic-body b { font-weight: 700; color: #2c3e50 !important; }
-.insight-warm  { background: #fff3e0; border-top: 4px solid #e64a19; }
-.insight-cool  { background: #e3f2fd; border-top: 4px solid #1976d2; }
-.insight-ok    { background: #e8f5e9; border-top: 4px solid #2e7d32; }
-.insight-tip   { background: #f3e5f5; border-top: 4px solid #7b1fa2; }
-.insight-info  { background: #e0f7fa; border-top: 4px solid #00838f; }
-.insights-section-title {
-    font-size: clamp(0.9rem, 1.1vw, 1rem) !important;
-    font-weight: 700 !important;
-    color: #2c3e50 !important;
-    margin-top: 1rem !important;
-    margin-bottom: 0.1rem !important;
+.insight-card {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.8rem !important;
+    border-left: 4px solid #ccc;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 </style>
 
-<div id="fb-overlay" onclick="if(event.target===this) closeModal()">
+<div id="fb-overlay">
   <div id="fb-modal">
-    <div id="fb-modal-header">
-      <span>📋 PhD Research Feedback Form</span>
-      <button id="fb-close" onclick="closeModal()" title="Close">✕</button>
-    </div>
-    <iframe id="fb-iframe" src="" data-src="https://forms.office.com/r/THfuycGkDZ"
-      title="Feedback Form" allow="clipboard-write"></iframe>
+    <div id="close-btn" onclick="closeModal()">✕</div>
+    <iframe src="https://forms.office.com/r/THfuycGkDZ"></iframe>
   </div>
 </div>
 
 <script>
 function openModal() {
-    var overlay = document.getElementById('fb-overlay');
-    var iframe  = document.getElementById('fb-iframe');
-    if (!iframe.src || iframe.src === window.location.href)
-        iframe.src = iframe.getAttribute('data-src');
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    document.getElementById('fb-overlay').classList.add('open');
 }
 function closeModal() {
     document.getElementById('fb-overlay').classList.remove('open');
-    document.body.style.overflow = '';
 }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 </script>
 """, unsafe_allow_html=True)
 
-
 # ==========================================
-# 2. LOAD MODELS & SCALER
+# 2. LOAD MODELS
 # ==========================================
 @st.cache_resource
 def load_models_and_scaler():
@@ -290,377 +136,128 @@ def load_models_and_scaler():
         ppd_model = joblib.load("XGBoost_PPD_model.pkl")
         scaler    = joblib.load("scaler_X.pkl")
         return pmv_model, ppd_model, scaler
-    except Exception as e:
-        st.error(f"❌ Error loading model files: {e}")
+    except:
         return None, None, None
 
 pmv_model, ppd_model, scaler_x = load_models_and_scaler()
 
-
 # ==========================================
-# 3. PREDICTION
-# Feature order: [Month, WallWidth, Depth, Orientation, WWR]
+# 3. 3D GEOMETRY - REALISTIC + NORTH ARROW + ZOOM FIX
 # ==========================================
-def get_predictions(month_str, wall_w, depth, orient_deg, wwr):
-    month_map = {"Jan": 1,  "Feb": 2,  "Mar": 3,  "Apr": 4,
-                 "May": 5,  "Jun": 6,  "Jul": 7,  "Aug": 8,
-                 "Sep": 9,  "Oct": 10, "Nov": 11, "Dec": 12}
-
-    if pmv_model is None or ppd_model is None or scaler_x is None:
-        return None, None
-
-    raw = np.array([[
-        month_map[month_str],
-        wall_w,
-        depth,
-        orient_deg,   # already in degrees from the slider
-        wwr
-    ]])
-
-    scaled = scaler_x.transform(raw)
-    pmv = round(float(pmv_model.predict(scaled)[0]), 2)
-    ppd = round(float(ppd_model.predict(scaled)[0]), 1)
-    return pmv, ppd
-
-
-# ==========================================
-# 4. ORIENTATION LABEL HELPER
-# ==========================================
-def orient_label(deg):
-    """Return a cardinal/intercardinal label for a degree value."""
-    deg = deg % 360
-    directions = [
-        (0,   "North (N)"),
-        (45,  "North-East (NE)"),
-        (90,  "East (E)"),
-        (135, "South-East (SE)"),
-        (180, "South (S)"),
-        (225, "South-West (SW)"),
-        (270, "West (W)"),
-        (315, "North-West (NW)"),
-        (360, "North (N)"),
-    ]
-    closest = min(directions, key=lambda x: abs(x[0] - deg))
-    return closest[1]
-
-
-# ==========================================
-# 5. DESIGN INSIGHTS GENERATOR
-# ==========================================
-def get_insights(pmv, ppd, month_str, orient_deg, wwr, wall_w, room_depth):
-    # Each item: (card_type, icon, title, body)
-    insights = []
-    hot_months  = ["May", "Jun", "Jul", "Aug", "Sep"]
-    cool_months = ["Dec", "Jan", "Feb"]
-
-    # ── A. Comfort status ──────────────────────────────────────────
-    if -0.5 <= pmv <= 0.5:
-        insights.append(("ok", "✅", "Comfort Zone Achieved",
-            f"PMV = {pmv:+.2f} is within ASHRAE 55 limits (−0.5 to +0.5). "
-            f"Only <b>{ppd:.0f}%</b> of occupants are predicted dissatisfied."))
-    elif pmv > 0.5:
-        severity = "Slightly Warm" if pmv <= 1.0 else ("Warm" if pmv <= 2.0 else "Very Hot")
-        insights.append(("warm", "🌡️", f"Overheating Risk — {severity}",
-            f"PMV = {pmv:+.2f} → <b>{ppd:.0f}%</b> dissatisfied. "
-            "Active or passive cooling strategies are needed."))
-    else:
-        severity = "Slightly Cool" if pmv >= -1.0 else ("Cool" if pmv >= -2.0 else "Very Cold")
-        insights.append(("cool", "❄️", f"Under-heating Risk — {severity}",
-            f"PMV = {pmv:+.2f} → <b>{ppd:.0f}%</b> dissatisfied. "
-            "Heating or additional solar gain may help."))
-
-    # ── B. Orientation advice ──────────────────────────────────────
-    orient_name = orient_label(orient_deg)
-    north_range = (orient_deg <= 22 or orient_deg >= 338)
-    south_range = (158 <= orient_deg <= 202)
-    east_range  = (68  <= orient_deg <= 112)
-    west_range  = (247 <= orient_deg <= 315)
-
-    if pmv > 0.5:
-        if west_range:
-            insights.append(("tip", "🧭", "Orientation — West Exposure",
-                f"West-facing glazing ({orient_name}) receives intense afternoon sun. "
-                "Rotate toward <b>North or NE</b> to reduce direct solar gain."))
-        elif south_range and month_str in hot_months:
-            insights.append(("tip", "🧭", "Orientation — South in Summer",
-                f"South-facing glazing ({orient_name}) increases summer heat load. "
-                "Add horizontal overhangs or reduce WWR to limit solar penetration."))
-        elif east_range:
-            insights.append(("info", "🧭", "Orientation — East Exposure",
-                f"East orientation ({orient_name}) brings manageable morning sun. "
-                "Verify shading adequacy for spring and summer months."))
-        else:
-            insights.append(("info", "🧭", f"Orientation — {orient_name}",
-                f"{orient_deg}° orientation has moderate solar impact. "
-                "Review shading performance for peak cooling months."))
-    elif pmv < -0.5:
-        if north_range:
-            insights.append(("tip", "🧭", "Orientation — North Limits Solar Gain",
-                f"North-facing glazing ({orient_name}) restricts passive heating. "
-                "Consider rotating toward <b>South (150°–210°)</b> to harvest winter sun."))
-        elif south_range and month_str in cool_months:
-            insights.append(("info", "🧭", "Orientation — South in Winter",
-                f"South orientation ({orient_name}) maximises passive solar heating in {month_str}. "
-                "A slight WWR increase may raise PMV toward neutral."))
-        else:
-            insights.append(("info", "🧭", f"Orientation — {orient_name}",
-                f"{orient_deg}° provides limited solar gain in this season. "
-                "Consider south-facing adjustments to improve passive heating."))
-    else:
-        insights.append(("info", "🧭", f"Orientation — {orient_name}",
-            f"{orient_deg}° orientation is performing well under current conditions."))
-
-    # ── C. WWR advice ──────────────────────────────────────────────
-    if pmv > 0.5 and wwr > 0.4:
-        insights.append(("tip", "🪟", "WWR — Reduce Glazing Area",
-            f"WWR = {wwr:.0%} is high and amplifying solar heat gain. "
-            "Reducing to <b>0.25–0.35</b> or adding external shading can significantly lower PMV."))
-    elif pmv > 0.5 and wwr <= 0.4:
-        insights.append(("info", "🪟", "WWR — Moderate, Not the Main Driver",
-            f"WWR = {wwr:.0%} is moderate. Solar gain is not the primary cause — "
-            "check mechanical cooling capacity or internal heat loads."))
-    elif pmv < -0.5 and wwr < 0.35:
-        insights.append(("tip", "🪟", "WWR — Increase Glazing Area",
-            f"WWR = {wwr:.0%} is low, limiting passive solar gain. "
-            "Increasing to <b>0.40–0.55</b> on a south-facing façade could improve PMV."))
-    else:
-        insights.append(("info", "🪟", "WWR — Balanced",
-            f"WWR = {wwr:.0%} is within a balanced range for the current thermal condition."))
-
-    # ── D. Room geometry advice ────────────────────────────────────
-    aspect = room_depth / wall_w if wall_w > 0 else 0
-    if pmv > 0.5 and aspect < 1.2:
-        insights.append(("tip", "📐", "Room Geometry — Shallow Plan",
-            f"Depth/width = {aspect:.1f} concentrates solar radiation near the façade. "
-            f"Increasing depth to ≥ <b>{wall_w*1.5:.1f} m</b> distributes heat load more evenly."))
-    elif pmv < -0.5 and aspect > 2.5:
-        insights.append(("tip", "📐", "Room Geometry — Deep Plan",
-            f"Depth/width = {aspect:.1f} means solar heat barely penetrates the interior. "
-            "A shallower plan or light shelf would improve passive heat distribution."))
-    else:
-        insights.append(("info", "📐", "Room Geometry — Adequate",
-            f"Depth/width ratio of {aspect:.1f} is reasonable for the current thermal condition."))
-
-    # ── E. Monthly context ─────────────────────────────────────────
-    if month_str in hot_months and pmv > 0.5:
-        insights.append(("warm", "📅", f"{month_str} — Peak Cooling Season",
-            "Night ventilation, reflective roofing, and low-e glazing are strongly recommended "
-            "for West Cairo's peak summer months."))
-    elif month_str in cool_months and pmv < -0.5:
-        insights.append(("cool", "📅", f"{month_str} — Heating-Dominant Month",
-            "Passive solar design, thermal mass on internal walls, and air-tight construction "
-            "will help retain heat during this period."))
-    elif month_str in ["Mar", "Apr", "Oct", "Nov"]:
-        insights.append(("ok", "📅", f"{month_str} — Transitional Season",
-            "Mild conditions allow natural ventilation to maintain comfort with minimal "
-            "mechanical intervention. Operable windows are highly beneficial."))
-
-    return insights
-
-
-# ==========================================
-# 6. 3D ROOM GEOMETRY
-# ==========================================
-def build_room_figure(wall_width, room_depth, wwr, height=3.0):
+def build_room_figure(W, D, wwr, orient_deg, height=3.0):
     fig = go.Figure()
-    W, D, H = wall_width, room_depth, height
+    
+    # ── Realistic Textures & Colors ──
+    # Floor (Polished Concrete/Wood feel)
+    fig.add_trace(go.Mesh3d(x=[0,0,W,W], y=[0,D,D,0], z=[0,0,0,0], i=[0,0], j=[1,2], k=[2,3], 
+                           color='#dcdde1', opacity=1, name="Floor"))
+    # Ceiling
+    fig.add_trace(go.Mesh3d(x=[0,0,W,W], y=[0,D,D,0], z=[height,height,height,height], i=[0,0], j=[1,2], k=[2,3], 
+                           color='#f5f6fa', opacity=0.5))
+    # Walls (Light Grey/Off-white)
+    fig.add_trace(go.Mesh3d(x=[0,0,0,0], y=[0,D,D,0], z=[0,0,height,height], i=[0,0], j=[1,2], k=[2,3], color='#ecf0f1')) # Left
+    fig.add_trace(go.Mesh3d(x=[W,W,W,W], y=[0,D,D,0], z=[0,0,height,height], i=[0,0], j=[1,2], k=[2,3], color='#ecf0f1')) # Right
+    fig.add_trace(go.Mesh3d(x=[0,0,W,W], y=[D,D,D,D], z=[0,height,height,0], i=[0,0], j=[1,2], k=[2,3], color='#bdc3c7')) # Back
 
-    def mesh(x, y, z, color, opacity=0.9):
-        return go.Mesh3d(x=x, y=y, z=z, i=[0,0], j=[1,2], k=[2,3],
-                         color=color, opacity=opacity, flatshading=True,
-                         showscale=False, showlegend=False)
-
-    def edge(xs, ys, zs, color='#90a4b8', width=2):
-        return go.Scatter3d(x=xs, y=ys, z=zs, mode='lines',
-                            line=dict(color=color, width=width), showlegend=False)
-
-    fig.add_trace(mesh([0,0,W,W],[0,D,D,0],[0,0,0,0],   '#d0d8e4', 0.95))
-    fig.add_trace(mesh([0,0,W,W],[0,D,D,0],[H,H,H,H],   '#e8edf3', 0.60))
-    fig.add_trace(mesh([0,0,W,W],[D,D,D,D],[0,H,H,0],   '#c8d0dc'))
-    fig.add_trace(mesh([0,0,0,0],[0,D,D,0],[0,0,H,H],   '#bcc6d4'))
-    fig.add_trace(mesh([W,W,W,W],[0,D,D,0],[0,0,H,H],   '#bcc6d4'))
-
+    # ── Glazing Calculation ──
     win_w = W * np.sqrt(wwr)
-    win_h = H * np.sqrt(wwr)
-    wx0 = (W - win_w) / 2;  wx1 = wx0 + win_w
-    wz0 = (H - win_h) / 2 + 0.1;  wz1 = wz0 + win_h
+    win_h = height * np.sqrt(wwr)
+    wx0, wx1 = (W - win_w)/2, (W + win_w)/2
+    wz0, wz1 = (height - win_h)/2, (height + win_h)/2
 
-    for x_verts, z_verts in [
-        ([0,   0,   wx0, wx0], [0,   H,   H,   0  ]),
-        ([wx1, wx1, W,   W  ], [0,   H,   H,   0  ]),
-        ([wx0, wx0, wx1, wx1], [0,   wz0, wz0, 0  ]),
-        ([wx0, wx0, wx1, wx1], [wz1, H,   H,   wz1]),
-    ]:
-        fig.add_trace(mesh(x_verts, [0,0,0,0], z_verts, '#b8c4d0', 0.85))
+    # Glass (Realistic cyan transparent)
+    fig.add_trace(go.Mesh3d(x=[wx0,wx0,wx1,wx1], y=[0,0,0,0], z=[wz0,wz1,wz1,wz0], i=[0,0], j=[1,2], k=[2,3], 
+                           color='#00d2ff', opacity=0.3, name="Glazing"))
 
-    fig.add_trace(mesh([wx0,wx0,wx1,wx1],[0,0,0,0],[wz0,wz1,wz1,wz0],'#00bcd4',0.45))
-    fig.add_trace(edge([wx0,wx1,wx1,wx0,wx0],[0,0,0,0,0],[wz0,wz0,wz1,wz1,wz0],'#888888',5))
-    mid_x = (wx0+wx1)/2;  mid_z = (wz0+wz1)/2
-    fig.add_trace(edge([mid_x,mid_x],[0,0],[wz0,wz1],'#666666',3))
-    fig.add_trace(edge([wx0,wx1],[0,0],[mid_z,mid_z],'#666666',3))
+    # ── NORTH ARROW (Representative of facade orientation) ──
+    # Place arrow on the ground in front of the window
+    arrow_len = 0.8
+    # Pivot logic: The window is ALWAYS at y=0. 
+    # If orientation is North, North is Y negative. 
+    rad = np.radians(orient_deg)
+    nx, ny = arrow_len * np.sin(rad), -arrow_len * np.cos(rad)
+    
+    # Arrow Stem
+    fig.add_trace(go.Scatter3d(x=[W/2, W/2 - nx], y=[-0.2, -0.2 - ny], z=[0.05, 0.05],
+                               mode='lines', line=dict(color='red', width=6), name="North"))
+    # Arrow Head
+    fig.add_trace(go.Scatter3d(x=[W/2 - nx], y=[-0.2 - ny], z=[0.05],
+                               mode='markers+text', marker=dict(symbol='diamond', size=5, color='red'),
+                               text=["N"], textposition="top center", showlegend=False))
 
-    for xs,ys,zs in [
-        ([0,W],[0,0],[0,0]),([0,W],[D,D],[0,0]),([0,0],[0,D],[0,0]),([W,W],[0,D],[0,0]),
-        ([0,W],[0,0],[H,H]),([0,W],[D,D],[H,H]),([0,0],[0,D],[H,H]),([W,W],[0,D],[H,H]),
-        ([0,0],[0,0],[0,H]),([W,W],[0,0],[0,H]),([0,0],[D,D],[0,H]),([W,W],[D,D],[0,H]),
-    ]:
-        fig.add_trace(edge(xs,ys,zs,'#90a4b8',2))
-
-    for i in range(1,4):
-        x_ = W*i/4
-        fig.add_trace(edge([x_,x_],[0,D],[0.002,0.002],'#c8d4e0',1))
-    for j in range(1, max(2, int(round(D/W*4)))):
-        y_ = D*j/max(2,int(round(D/W*4)))
-        fig.add_trace(edge([0,W],[y_,y_],[0.002,0.002],'#c8d4e0',1))
-
-    for rx in np.linspace(wx0+win_w*0.15, wx1-win_w*0.15, 3):
-        for rz in np.linspace(wz0+win_h*0.2, wz1-win_h*0.2, 2):
-            fig.add_trace(go.Scatter3d(
-                x=[rx, rx+(rx-W/2)*0.3], y=[0.02, D*0.55],
-                z=[rz, rz-win_h*0.15], mode='lines',
-                line=dict(color='rgba(0,188,212,0.12)', width=2), showlegend=False))
-
-    # Normalise camera eye so zoom stays constant regardless of room size
-    norm = np.sqrt((W*1.5)**2 + (D*0.65*2.0)**2 + (H*0.9*1.1)**2)
-    eye_scale = 2.8 / norm if norm > 0 else 1.0
-
+    # ── ZOOM ISSUE FIX (Fixed camera eye and projection) ──
     fig.update_layout(
         scene=dict(
-            xaxis=dict(visible=False, range=[-W*0.1, W*1.1]),
-            yaxis=dict(visible=False, range=[-D*0.05, D*1.1]),
-            zaxis=dict(visible=False, range=[-0.1, H*1.15]),
-            bgcolor='#f0f4f8',
+            xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False),
             camera=dict(
-                eye=dict(
-                    x=-W*1.5  * eye_scale,
-                    y=-D*0.65 * 2.0 * eye_scale,
-                    z= H*0.9  * 1.1 * eye_scale
-                ),
-                up=dict(x=0, y=0, z=1)
+                eye=dict(x=1.8, y=-1.8, z=1.2), # Standardized Perspective
+                projection=dict(type='perspective')
             ),
-            aspectmode='manual',
-            aspectratio=dict(x=W, y=D*0.65, z=H*0.9)
+            aspectmode='data' # Keeps proportions realistic
         ),
-        uirevision='room',          # keeps camera position when data changes
-        margin=dict(l=0,r=0,b=0,t=0),
-        template="plotly_white",
-        autosize=True,
-        paper_bgcolor='#ffffff',
-        showlegend=False
+        margin=dict(l=0, r=0, b=0, t=0),
+        height=380,
+        uirevision='constant' # FIX: Keeps zoom/pan even when sliders move
     )
     return fig
 
+# ==========================================
+# 4. PREDICTIONS & LOGIC
+# ==========================================
+def get_predictions(m, w, d, o, wwr):
+    if not pmv_model: return 0.0, 0.0
+    m_map = {"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}
+    raw = np.array([[m_map[m], w, d, o, wwr]])
+    scaled = scaler_x.transform(raw)
+    return pmv_model.predict(scaled)[0], ppd_model.predict(scaled)[0]
 
 # ==========================================
-# 7. TITLE + FEEDBACK BUTTON
+# 5. UI LAYOUT (ONE SCREEN)
 # ==========================================
-title_col, btn_col = st.columns([5, 1])
-with title_col:
-    st.title("🏛️S-TCML V.01 Architectural Thermal Comfort Predictor")
-    st.markdown("""<div class="description-text">
-    AI-driven prediction of <b>PMV</b> and <b>PPD</b> from architectural parameters —
-    PhD research tool for early-stage thermal performance optimization.
-    </div>""", unsafe_allow_html=True)
-with btn_col:
-    st.markdown("""
-    <div class="feedback-btn-wrap" style="height:100%; padding-top:0.8rem;">
-        <button class="feedback-trigger" onclick="openModal()">📋 Give Feedback</button>
-    </div>""", unsafe_allow_html=True)
+t1, t2 = st.columns([4, 1])
+with t1:
+    st.title("🏛️ S-TCML V.01: PhD Thermal Predictor")
+with t2:
+    st.markdown('<button class="feedback-trigger" onclick="openModal()">📋 Feedback</button>', unsafe_allow_html=True)
 
-st.markdown("---")
+c1, c2, c3 = st.columns([1.1, 2.2, 1])
 
+with c1:
+    st.subheader("⚙️ Inputs")
+    month = st.select_slider("Month", options=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], value="Jul")
+    w_w = st.slider("Wall Width", 2.0, 6.0, 4.0)
+    r_d = st.slider("Room Depth", 2.0, 8.0, 5.0)
+    orient = st.select_slider("Facade Orientation", options=[0, 90, 180, 270], format_func=lambda x: {0:"North", 90:"East", 180:"South", 270:"West"}[x])
+    wwr_val = st.slider("WWR", 0.1, 0.8, 0.3)
 
-# ==========================================
-# 8. THREE-COLUMN LAYOUT
-# ==========================================
-col1, col2, col3 = st.columns([1, 2.2, 1])
+pmv, ppd = get_predictions(month, w_w, r_d, orient, wwr_val)
 
-with col1:
-    st.subheader("⚙ Control Panel")
-    month_val  = st.select_slider("Month",
-        options=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-        value="Jul")
-    wall_width  = st.slider("Exterior Wall Width (m)", 0.5, 5.0, 3.5, step=0.1)
-    room_depth  = st.slider("Room Depth (m)", 2.0, 10.0, 5.0, step=0.25)
+with c2:
+    st.subheader("📐 3D Preview")
+    st.plotly_chart(build_room_figure(w_w, r_d, wwr_val, orient), use_container_width=True)
 
-    # ── Orientation: cardinal directions → degrees for model ─────
-    orient_deg_map = {"North": 0, "East": 90, "South": 180, "West": 270}
-    orientation = st.select_slider(
-        "Glazing Orientation",
-        options=["North", "East", "South", "West"],
-        value="South"
-    )
-    orient_deg  = orient_deg_map[orientation]
-    orient_name = orientation
-
-    wwr = st.slider("Window-to-Wall Ratio", 0.1, 0.9, 0.4, step=0.05)
-
-# ── Run prediction ────────────────────────────────────────────
-pmv, ppd = get_predictions(month_val, wall_width, room_depth, orient_deg, wwr)
-
-with col2:
-    st.subheader("📐 Room Geometry")
-    st.plotly_chart(build_room_figure(wall_width, room_depth, wwr), width='stretch')
-
-with col3:
-    st.subheader("📊 Predictions")
-
-    if pmv is not None:
-        st.metric("PMV — Predicted Mean Vote", pmv)
-        st.metric("PPD — % Dissatisfied", f"{ppd:.1f}%")
-
-        comfort_ok = -0.5 <= pmv <= 0.5
-        bar_color  = "#00897b" if comfort_ok else ("#e64a19" if pmv > 0 else "#1976d2")
-        label_text = "✅ Comfortable" if comfort_ok else ("🔴 Too Warm" if pmv > 0 else "🔵 Too Cool")
-        pct = min(max((pmv + 3) / 6, 0), 1) * 100
-
-        st.markdown(f"""
-        <div style="margin-top:6px;">
-          <div style="background:#e0e8f0;border-radius:8px;height:14px;overflow:hidden;">
-            <div style="width:{pct:.1f}%;background:{bar_color};height:100%;border-radius:8px;transition:width 0.4s;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#78909c;margin-top:3px;">
-            <span>-3 Cold</span>
-            <span style="color:{bar_color};font-weight:600;">{label_text}</span>
-            <span>+3 Hot</span>
-          </div>
+with c3:
+    st.subheader("📊 Results")
+    st.metric("PMV (Thermal Vote)", f"{pmv:.2f}")
+    st.metric("PPD (Dissatisfied)", f"{ppd:.1f}%")
+    
+    # Comfort Gauge
+    color = "#27ae60" if -0.5 <= pmv <= 0.5 else "#e67e22"
+    st.markdown(f"""
+        <div style="background:#eee; height:15px; border-radius:10px;">
+            <div style="background:{color}; width:{min(100, (pmv+3)*16.6)}%; height:100%; border-radius:10px;"></div>
         </div>
-        <p style="font-size:0.75rem;color:#90a4ae;margin-top:8px;">ASHRAE 55 target: −0.5 to +0.5</p>
-        """, unsafe_allow_html=True)
-    else:
-        st.warning("⚠️ Could not load model files. Make sure XGBoost_PMV_model.pkl, XGBoost_PPD_model.pkl, and scaler_X.pkl are in the same folder as this script.")
+        <center><small>-3 (Cold) | 0 (Neutral) | +3 (Hot)</small></center>
+    """, unsafe_allow_html=True)
 
-
-# ==========================================
-# 9. DESIGN INSIGHTS — FULL-WIDTH BOTTOM STRIP
-# ==========================================
-st.markdown("---")
-st.markdown('<div class="insights-section-title">💡 Design Insights</div>', unsafe_allow_html=True)
-
-if pmv is not None:
-    insights = get_insights(pmv, ppd, month_val, orient_deg, wwr, wall_width, room_depth)
-
-    # Build one big horizontal flex row of cards
-    cards_html = '<div class="insights-strip">'
-    for (card_type, icon, title, body) in insights:
-        cards_html += (
-            f'<div class="insight-card insight-{card_type}">'
-            f'  <div class="ic-header">'
-            f'    <span class="ic-icon">{icon}</span>'
-            f'    <span class="ic-title">{title}</span>'
-            f'  </div>'
-            f'  <div class="ic-body">{body}</div>'
-            f'</div>'
-        )
-    cards_html += '</div>'
-    st.markdown(cards_html, unsafe_allow_html=True)
+# 6. COMPACT INSIGHTS STRIP
+st.markdown('<div class="insights-strip">', unsafe_allow_html=True)
+if pmv > 0.5:
+    st.markdown('<div class="insight-card" style="border-color:#e67e22"><b>🔥 Overheating:</b> Consider reducing WWR or adding shading.</div>', unsafe_allow_html=True)
+elif pmv < -0.5:
+    st.markdown('<div class="insight-card" style="border-color:#3498db"><b>❄️ Underheating:</b> Increase South-facing glazing for solar gain.</div>', unsafe_allow_html=True)
 else:
-    st.markdown(
-        '<div class="insights-strip">'
-        '<div class="insight-card insight-info">'
-        '<div class="ic-header"><span class="ic-icon">ℹ️</span>'
-        '<span class="ic-title">Models Not Loaded</span></div>'
-        '<div class="ic-body">Load model files to generate design insights.</div>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="insight-card" style="border-color:#2ecc71"><b>✅ Optimal:</b> Parameters meet ASHRAE 55 standards.</div>', unsafe_allow_html=True)
+
+st.markdown(f'<div class="insight-card"><b>🧭 Orientation:</b> Facade is facing {orient}°. North arrow updated in 3D.</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
