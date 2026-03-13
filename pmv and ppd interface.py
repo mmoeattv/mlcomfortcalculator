@@ -197,32 +197,57 @@ div[data-testid="column"] {
 #fb-close:hover { color: #c0392b; }
 #fb-modal iframe { flex: 1; border: none; width: 100%; }
 
-/* ── Insight cards ── */
+/* ── Insight cards — horizontal bottom strip ── */
+.insights-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+    width: 100%;
+}
 .insight-card {
-    border-radius: 10px;
-    padding: 0.55rem 0.75rem;
-    margin-bottom: 0.45rem;
-    font-size: clamp(0.78rem, 0.95vw, 0.88rem) !important;
+    flex: 1 1 200px;
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem 0.6rem;
+    font-size: clamp(0.74rem, 0.9vw, 0.84rem) !important;
     line-height: 1.45;
     display: flex;
-    gap: 0.5rem;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    min-width: 160px;
+    max-width: 320px;
 }
-.insight-card .ic-icon { font-size: 1.05rem; flex-shrink: 0; margin-top: 1px; }
-.insight-card .ic-body { color: #2c3e50 !important; }
-.insight-card .ic-body b { font-weight: 700; }
-.insight-warm  { background: #fff3e0; border-left: 4px solid #e64a19; }
-.insight-cool  { background: #e3f2fd; border-left: 4px solid #1976d2; }
-.insight-ok    { background: #e8f5e9; border-left: 4px solid #2e7d32; }
-.insight-tip   { background: #f3e5f5; border-left: 4px solid #7b1fa2; }
-.insight-info  { background: #e0f7fa; border-left: 4px solid #00838f; }
-.insight-title {
-    font-size: clamp(0.82rem, 1vw, 0.92rem) !important;
+.insight-card .ic-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.15rem;
+}
+.insight-card .ic-icon { font-size: 1.05rem; flex-shrink: 0; line-height: 1; }
+.insight-card .ic-title {
+    font-size: clamp(0.74rem, 0.88vw, 0.83rem) !important;
     font-weight: 700 !important;
-    color: #37474f !important;
-    margin: 0.6rem 0 0.3rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    color: #2c3e50 !important;
+    line-height: 1.2;
+}
+.insight-card .ic-body {
+    font-size: clamp(0.7rem, 0.84vw, 0.79rem) !important;
+    color: #455a64 !important;
+    line-height: 1.45;
+}
+.insight-card .ic-body b { font-weight: 700; color: #2c3e50 !important; }
+.insight-warm  { background: #fff3e0; border-top: 4px solid #e64a19; }
+.insight-cool  { background: #e3f2fd; border-top: 4px solid #1976d2; }
+.insight-ok    { background: #e8f5e9; border-top: 4px solid #2e7d32; }
+.insight-tip   { background: #f3e5f5; border-top: 4px solid #7b1fa2; }
+.insight-info  { background: #e0f7fa; border-top: 4px solid #00838f; }
+.insights-section-title {
+    font-size: clamp(0.9rem, 1.1vw, 1rem) !important;
+    font-weight: 700 !important;
+    color: #2c3e50 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.1rem !important;
 }
 </style>
 
@@ -323,105 +348,112 @@ def orient_label(deg):
 # 5. DESIGN INSIGHTS GENERATOR
 # ==========================================
 def get_insights(pmv, ppd, month_str, orient_deg, wwr, wall_w, room_depth):
+    # Each item: (card_type, icon, title, body)
     insights = []
     hot_months  = ["May", "Jun", "Jul", "Aug", "Sep"]
     cool_months = ["Dec", "Jan", "Feb"]
 
     # ── A. Comfort status ──────────────────────────────────────────
     if -0.5 <= pmv <= 0.5:
-        insights.append(("ok", "✅",
-            f"<b>Comfort Zone Achieved.</b> PMV = {pmv:+.2f} is within ASHRAE 55 limits (−0.5 to +0.5). "
-            f"Only <b>{ppd:.0f}%</b> of occupants are predicted to be dissatisfied."))
+        insights.append(("ok", "✅", "Comfort Zone Achieved",
+            f"PMV = {pmv:+.2f} is within ASHRAE 55 limits (−0.5 to +0.5). "
+            f"Only <b>{ppd:.0f}%</b> of occupants are predicted dissatisfied."))
     elif pmv > 0.5:
-        severity = "slightly warm" if pmv <= 1.0 else ("warm" if pmv <= 2.0 else "very hot")
-        insights.append(("warm", "🌡️",
-            f"<b>Overheating Risk ({severity}).</b> PMV = {pmv:+.2f} → "
-            f"<b>{ppd:.0f}%</b> of occupants dissatisfied. Cooling strategies are needed."))
+        severity = "Slightly Warm" if pmv <= 1.0 else ("Warm" if pmv <= 2.0 else "Very Hot")
+        insights.append(("warm", "🌡️", f"Overheating Risk — {severity}",
+            f"PMV = {pmv:+.2f} → <b>{ppd:.0f}%</b> dissatisfied. "
+            "Active or passive cooling strategies are needed."))
     else:
-        severity = "slightly cool" if pmv >= -1.0 else ("cool" if pmv >= -2.0 else "very cold")
-        insights.append(("cool", "❄️",
-            f"<b>Under-heating Risk ({severity}).</b> PMV = {pmv:+.2f} → "
-            f"<b>{ppd:.0f}%</b> of occupants dissatisfied. Heating or solar gain may help."))
+        severity = "Slightly Cool" if pmv >= -1.0 else ("Cool" if pmv >= -2.0 else "Very Cold")
+        insights.append(("cool", "❄️", f"Under-heating Risk — {severity}",
+            f"PMV = {pmv:+.2f} → <b>{ppd:.0f}%</b> dissatisfied. "
+            "Heating or additional solar gain may help."))
 
     # ── B. Orientation advice ──────────────────────────────────────
     orient_name = orient_label(orient_deg)
-    north_range  = (orient_deg <= 22 or orient_deg >= 338)
-    south_range  = (158 <= orient_deg <= 202)
-    east_range   = (68 <= orient_deg <= 112)
-    west_range   = (248 <= orient_deg <= 292)
+    north_range = (orient_deg <= 22 or orient_deg >= 338)
+    south_range = (158 <= orient_deg <= 202)
+    east_range  = (68  <= orient_deg <= 112)
+    west_range  = (247 <= orient_deg <= 315)
 
     if pmv > 0.5:
-        if west_range or (247 <= orient_deg <= 315):
-            insights.append(("tip", "🧭",
-                f"<b>Orientation ({orient_name}) is contributing to overheating.</b> "
-                "West-facing glazing receives intense afternoon sun. "
-                "Consider rotating toward <b>North or North-East</b> to reduce direct solar gain."))
+        if west_range:
+            insights.append(("tip", "🧭", "Orientation — West Exposure",
+                f"West-facing glazing ({orient_name}) receives intense afternoon sun. "
+                "Rotate toward <b>North or NE</b> to reduce direct solar gain."))
         elif south_range and month_str in hot_months:
-            insights.append(("tip", "🧭",
-                f"<b>South-facing glazing ({orient_name}) in summer increases heat load.</b> "
-                "Add horizontal shading devices (overhangs) or reduce WWR to limit solar penetration."))
+            insights.append(("tip", "🧭", "Orientation — South in Summer",
+                f"South-facing glazing ({orient_name}) increases summer heat load. "
+                "Add horizontal overhangs or reduce WWR to limit solar penetration."))
         elif east_range:
-            insights.append(("tip", "🧭",
-                f"<b>East orientation ({orient_name})</b> brings morning sun — manageable in summer. "
-                "Verify shading adequacy for late-spring and summer months."))
+            insights.append(("info", "🧭", "Orientation — East Exposure",
+                f"East orientation ({orient_name}) brings manageable morning sun. "
+                "Verify shading adequacy for spring and summer months."))
+        else:
+            insights.append(("info", "🧭", f"Orientation — {orient_name}",
+                f"{orient_deg}° orientation has moderate solar impact. "
+                "Review shading performance for peak cooling months."))
     elif pmv < -0.5:
         if north_range:
-            insights.append(("tip", "🧭",
-                f"<b>North-facing glazing ({orient_name}) limits passive solar gain.</b> "
-                "In cool months this worsens under-heating. "
+            insights.append(("tip", "🧭", "Orientation — North Limits Solar Gain",
+                f"North-facing glazing ({orient_name}) restricts passive heating. "
                 "Consider rotating toward <b>South (150°–210°)</b> to harvest winter sun."))
         elif south_range and month_str in cool_months:
-            insights.append(("info", "🧭",
-                f"<b>South orientation ({orient_name}) is advantageous in winter</b> — "
-                "it maximises passive solar heating. "
-                "Increasing WWR slightly may help raise PMV toward neutral."))
+            insights.append(("info", "🧭", "Orientation — South in Winter",
+                f"South orientation ({orient_name}) maximises passive solar heating in {month_str}. "
+                "A slight WWR increase may raise PMV toward neutral."))
+        else:
+            insights.append(("info", "🧭", f"Orientation — {orient_name}",
+                f"{orient_deg}° provides limited solar gain in this season. "
+                "Consider south-facing adjustments to improve passive heating."))
     else:
-        insights.append(("info", "🧭",
-            f"<b>Orientation {orient_name} ({orient_deg}°)</b> is performing well under current conditions."))
+        insights.append(("info", "🧭", f"Orientation — {orient_name}",
+            f"{orient_deg}° orientation is performing well under current conditions."))
 
     # ── C. WWR advice ──────────────────────────────────────────────
     if pmv > 0.5 and wwr > 0.4:
-        insights.append(("tip", "🪟",
-            f"<b>WWR = {wwr:.0%} is high</b> and amplifying solar heat gain. "
-            "Reducing WWR to <b>0.25–0.35</b> or adding external shading "
-            "can significantly lower PMV in hot conditions."))
+        insights.append(("tip", "🪟", "WWR — Reduce Glazing Area",
+            f"WWR = {wwr:.0%} is high and amplifying solar heat gain. "
+            "Reducing to <b>0.25–0.35</b> or adding external shading can significantly lower PMV."))
     elif pmv > 0.5 and wwr <= 0.4:
-        insights.append(("info", "🪟",
-            f"<b>WWR = {wwr:.0%}</b> is moderate. Solar gain is not the primary driver here — "
+        insights.append(("info", "🪟", "WWR — Moderate, Not the Main Driver",
+            f"WWR = {wwr:.0%} is moderate. Solar gain is not the primary cause — "
             "check mechanical cooling capacity or internal heat loads."))
     elif pmv < -0.5 and wwr < 0.35:
-        insights.append(("tip", "🪟",
-            f"<b>WWR = {wwr:.0%} is low</b> — passive solar gain is limited. "
-            "Increasing WWR to <b>0.40–0.55</b> on a south-facing façade "
-            "could raise indoor temperature and improve PMV."))
+        insights.append(("tip", "🪟", "WWR — Increase Glazing Area",
+            f"WWR = {wwr:.0%} is low, limiting passive solar gain. "
+            "Increasing to <b>0.40–0.55</b> on a south-facing façade could improve PMV."))
     else:
-        insights.append(("info", "🪟",
-            f"<b>WWR = {wwr:.0%}</b> is within a balanced range for the current thermal condition."))
+        insights.append(("info", "🪟", "WWR — Balanced",
+            f"WWR = {wwr:.0%} is within a balanced range for the current thermal condition."))
 
     # ── D. Room geometry advice ────────────────────────────────────
     aspect = room_depth / wall_w if wall_w > 0 else 0
     if pmv > 0.5 and aspect < 1.2:
-        insights.append(("tip", "📐",
-            f"<b>Shallow room (depth/width = {aspect:.1f})</b> concentrates solar radiation "
-            "near the façade. Increasing room depth to <b>≥ {wall_w*1.5:.1f} m</b> "
-            "distributes heat load more evenly."))
+        insights.append(("tip", "📐", "Room Geometry — Shallow Plan",
+            f"Depth/width = {aspect:.1f} concentrates solar radiation near the façade. "
+            f"Increasing depth to ≥ <b>{wall_w*1.5:.1f} m</b> distributes heat load more evenly."))
     elif pmv < -0.5 and aspect > 2.5:
-        insights.append(("tip", "📐",
-            f"<b>Deep room (depth/width = {aspect:.1f})</b> means daylight and solar heat "
-            "barely penetrate the interior. A shallower plan or a light shelf "
-            "would improve passive heat distribution."))
+        insights.append(("tip", "📐", "Room Geometry — Deep Plan",
+            f"Depth/width = {aspect:.1f} means solar heat barely penetrates the interior. "
+            "A shallower plan or light shelf would improve passive heat distribution."))
+    else:
+        insights.append(("info", "📐", "Room Geometry — Adequate",
+            f"Depth/width ratio of {aspect:.1f} is reasonable for the current thermal condition."))
 
     # ── E. Monthly context ─────────────────────────────────────────
     if month_str in hot_months and pmv > 0.5:
-        insights.append(("warm", "📅",
-            f"<b>{month_str} is a peak cooling month</b> in West Cairo. "
-            "Night ventilation, reflective roofing, and high-performance glazing (low-e) "
-            "are strongly recommended for this season."))
+        insights.append(("warm", "📅", f"{month_str} — Peak Cooling Season",
+            "Night ventilation, reflective roofing, and low-e glazing are strongly recommended "
+            "for West Cairo's peak summer months."))
     elif month_str in cool_months and pmv < -0.5:
-        insights.append(("cool", "📅",
-            f"<b>{month_str} is a heating-dominant month.</b> "
-            "Consider passive solar design, thermal mass on internal walls, "
-            "and air-tight construction to retain heat."))
+        insights.append(("cool", "📅", f"{month_str} — Heating-Dominant Month",
+            "Passive solar design, thermal mass on internal walls, and air-tight construction "
+            "will help retain heat during this period."))
+    elif month_str in ["Mar", "Apr", "Oct", "Nov"]:
+        insights.append(("ok", "📅", f"{month_str} — Transitional Season",
+            "Mild conditions allow natural ventilation to maintain comfort with minimal "
+            "mechanical intervention. Operable windows are highly beneficial."))
 
     return insights
 
@@ -488,16 +520,28 @@ def build_room_figure(wall_width, room_depth, wwr, height=3.0):
                 z=[rz, rz-win_h*0.15], mode='lines',
                 line=dict(color='rgba(0,188,212,0.12)', width=2), showlegend=False))
 
+    # Normalise camera eye so zoom stays constant regardless of room size
+    norm = np.sqrt((W*1.5)**2 + (D*0.65*2.0)**2 + (H*0.9*1.1)**2)
+    eye_scale = 2.8 / norm if norm > 0 else 1.0
+
     fig.update_layout(
         scene=dict(
             xaxis=dict(visible=False, range=[-W*0.1, W*1.1]),
             yaxis=dict(visible=False, range=[-D*0.05, D*1.1]),
             zaxis=dict(visible=False, range=[-0.1, H*1.15]),
             bgcolor='#f0f4f8',
-            camera=dict(eye=dict(x=-1.5,y=-2.0,z=1.1), up=dict(x=0,y=0,z=1)),
+            camera=dict(
+                eye=dict(
+                    x=-W*1.5  * eye_scale,
+                    y=-D*0.65 * 2.0 * eye_scale,
+                    z= H*0.9  * 1.1 * eye_scale
+                ),
+                up=dict(x=0, y=0, z=1)
+            ),
             aspectmode='manual',
             aspectratio=dict(x=W, y=D*0.65, z=H*0.9)
         ),
+        uirevision='room',          # keeps camera position when data changes
         margin=dict(l=0,r=0,b=0,t=0),
         template="plotly_white",
         autosize=True,
@@ -539,47 +583,20 @@ with col1:
     wall_width  = st.slider("Exterior Wall Width (m)", 0.5, 5.0, 3.5, step=0.1)
     room_depth  = st.slider("Room Depth (m)", 2.0, 10.0, 5.0, step=0.25)
 
-    # ── Orientation: degrees slider ───────────────────────────────
-    orient_deg = st.slider(
-        "Glazing Orientation (°)",
-        min_value=0, max_value=355,
-        value=180, step=5,
-        help="0° = North · 90° = East · 180° = South · 270° = West"
+    # ── Orientation: cardinal directions → degrees for model ─────
+    orient_deg_map = {"North": 0, "East": 90, "South": 180, "West": 270}
+    orientation = st.select_slider(
+        "Glazing Orientation",
+        options=["North", "East", "South", "West"],
+        value="South"
     )
-    orient_name = orient_label(orient_deg)
-    st.markdown(
-        f"<div style='margin-top:-10px; margin-bottom:6px; font-size:0.82rem; color:#00796b; font-weight:600;'>"
-        f"🧭 {orient_deg}° — {orient_name}</div>",
-        unsafe_allow_html=True
-    )
+    orient_deg  = orient_deg_map[orientation]
+    orient_name = orientation
 
     wwr = st.slider("Window-to-Wall Ratio", 0.1, 0.9, 0.4, step=0.05)
 
-    # ── Run prediction ────────────────────────────────────────────
-    pmv, ppd = get_predictions(month_val, wall_width, room_depth, orient_deg, wwr)
-
-    # ── Design Insights ───────────────────────────────────────────
-    st.markdown("---")
-    st.subheader("💡 Design Insights")
-
-    if pmv is not None:
-        insights = get_insights(pmv, ppd, month_val, orient_deg, wwr, wall_width, room_depth)
-        for (card_type, icon, html_body) in insights:
-            st.markdown(
-                f'<div class="insight-card insight-{card_type}">'
-                f'<span class="ic-icon">{icon}</span>'
-                f'<span class="ic-body">{html_body}</span>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-    else:
-        st.markdown(
-            '<div class="insight-card insight-info">'
-            '<span class="ic-icon">ℹ️</span>'
-            '<span class="ic-body">Load model files to generate design insights.</span>'
-            '</div>',
-            unsafe_allow_html=True
-        )
+# ── Run prediction ────────────────────────────────────────────
+pmv, ppd = get_predictions(month_val, wall_width, room_depth, orient_deg, wwr)
 
 with col2:
     st.subheader("📐 Room Geometry")
@@ -612,3 +629,38 @@ with col3:
         """, unsafe_allow_html=True)
     else:
         st.warning("⚠️ Could not load model files. Make sure XGBoost_PMV_model.pkl, XGBoost_PPD_model.pkl, and scaler_X.pkl are in the same folder as this script.")
+
+
+# ==========================================
+# 9. DESIGN INSIGHTS — FULL-WIDTH BOTTOM STRIP
+# ==========================================
+st.markdown("---")
+st.markdown('<div class="insights-section-title">💡 Design Insights</div>', unsafe_allow_html=True)
+
+if pmv is not None:
+    insights = get_insights(pmv, ppd, month_val, orient_deg, wwr, wall_width, room_depth)
+
+    # Build one big horizontal flex row of cards
+    cards_html = '<div class="insights-strip">'
+    for (card_type, icon, title, body) in insights:
+        cards_html += (
+            f'<div class="insight-card insight-{card_type}">'
+            f'  <div class="ic-header">'
+            f'    <span class="ic-icon">{icon}</span>'
+            f'    <span class="ic-title">{title}</span>'
+            f'  </div>'
+            f'  <div class="ic-body">{body}</div>'
+            f'</div>'
+        )
+    cards_html += '</div>'
+    st.markdown(cards_html, unsafe_allow_html=True)
+else:
+    st.markdown(
+        '<div class="insights-strip">'
+        '<div class="insight-card insight-info">'
+        '<div class="ic-header"><span class="ic-icon">ℹ️</span>'
+        '<span class="ic-title">Models Not Loaded</span></div>'
+        '<div class="ic-body">Load model files to generate design insights.</div>'
+        '</div></div>',
+        unsafe_allow_html=True
+    )
