@@ -11,75 +11,76 @@ st.set_page_config(page_title="S-TCML Thermal Comfort", layout="wide", initial_s
 st.markdown("""
 <style>
 /* ── Reset & compact layout ── */
-html, body { overflow: hidden !important; }
 .block-container {
-    padding: 0.35rem 0.9rem 0.2rem 0.9rem !important;
+    padding: 0.5rem 1.0rem 0.3rem 1.0rem !important;
     max-width: 100% !important;
 }
 section[data-testid="stSidebar"] { display: none !important; }
 .stApp, body, [data-testid="stAppViewContainer"] { background: #eef1f6 !important; }
-[data-testid="stHeader"] { background: #eef1f6 !important; min-height: 2rem !important; }
+[data-testid="stHeader"] { background: #eef1f6 !important; min-height: 0 !important; padding: 0 !important; }
 [data-testid="stToolbar"] { display: none !important; }
 footer { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
 
-/* ── Typography ── */
-h1 { font-size: 1.0rem !important; margin: 0 0 0.05rem !important; color: #1a1a2e !important;
+/* ── Typography — readable sizes ── */
+h1 { font-size: 1.25rem !important; margin: 0 0 0.1rem !important; color: #1a1a2e !important;
      font-weight: 800 !important; letter-spacing: -0.01em; line-height: 1.2 !important; }
-h2, h3 { font-size: 0.7rem !important; margin: 0.2rem 0 0.15rem !important; color: #37474f !important;
-          font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.05em; }
-p, div, span, label { font-size: 0.73rem !important; color: #333 !important; line-height: 1.35 !important; }
+h2, h3 { font-size: 0.85rem !important; margin: 0.15rem 0 0.2rem !important; color: #37474f !important;
+          font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.04em; }
+p, div, span, label { font-size: 0.85rem !important; color: #333 !important; line-height: 1.4 !important; }
 
 /* ── Metrics ── */
 div[data-testid="stMetric"] {
     background: linear-gradient(135deg,#ffffff,#f0fffe);
     border: 1.5px solid #b2dfdb; border-radius: 10px;
-    padding: 0.3rem 0.55rem 0.25rem !important; margin-bottom: 0.3rem;
+    padding: 0.4rem 0.7rem 0.35rem !important; margin-bottom: 0.4rem;
     box-shadow: 0 2px 8px rgba(0,150,136,0.10);
 }
 div[data-testid="stMetricValue"] {
-    font-size: 1.45rem !important; color: #00838f !important;
+    font-size: 1.7rem !important; color: #00838f !important;
     font-weight: 800 !important; line-height: 1.05 !important;
 }
 div[data-testid="stMetricLabel"] > div {
-    font-size: 0.62rem !important; color: #00796b !important;
+    font-size: 0.72rem !important; color: #00796b !important;
     font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.04em;
 }
 
-/* ── Sliders compact ── */
-div[data-testid="stSlider"], div[data-testid="stSelectSlider"] { margin-bottom: 0.05rem !important; }
+/* ── Sliders ── */
+div[data-testid="stSlider"], div[data-testid="stSelectSlider"] { margin-bottom: 0.1rem !important; }
 div[data-testid="stSlider"] > div > div > div {
-    height: 5px !important; border-radius: 3px !important; background: #cfd8dc !important;
+    height: 6px !important; border-radius: 3px !important; background: #cfd8dc !important;
 }
 div[data-testid="stSlider"] > div > div > div > div {
-    background: linear-gradient(90deg,#00897b,#00bcd4) !important; height: 5px !important;
+    background: linear-gradient(90deg,#00897b,#00bcd4) !important; height: 6px !important;
 }
 div[data-testid="stSlider"] span[role="slider"],
 div[data-testid="stSelectSlider"] span[role="slider"] {
-    width: 16px !important; height: 16px !important; background: #00897b !important;
+    width: 18px !important; height: 18px !important; background: #00897b !important;
     border: 3px solid #fff !important; border-radius: 50% !important;
     box-shadow: 0 0 0 2px #00897b66 !important; top: -6px !important; cursor: grab !important;
 }
-div[data-testid="stSlider"] label, div[data-testid="stSelectSlider"] label {
-    font-size: 0.67rem !important; color: #37474f !important; font-weight: 700 !important;
-    margin-bottom: 0 !important; text-transform: uppercase; letter-spacing: 0.04em;
+div[data-testid="stSlider"] label, div[data-testid="stSelectSlider"] label,
+div[data-testid="stSelectbox"] label {
+    font-size: 0.78rem !important; color: #37474f !important; font-weight: 700 !important;
+    margin-bottom: 0 !important; text-transform: uppercase; letter-spacing: 0.03em;
 }
 
 /* ── Column panels ── */
-div[data-testid="column"] { padding: 0 0.35rem !important; }
+div[data-testid="column"] { padding: 0 0.4rem !important; }
 div[data-testid="column"]:first-child {
-    background: #fff; border-radius: 11px;
-    padding: 0.55rem 0.7rem !important; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    background: #fff; border-radius: 12px;
+    padding: 0.6rem 0.8rem !important; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
 }
 div[data-testid="column"]:last-child {
-    background: #fff; border-radius: 11px;
-    padding: 0.55rem 0.7rem !important; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    background: #fff; border-radius: 12px;
+    padding: 0.6rem 0.8rem !important; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
 }
 
 /* ── Feedback button ── */
 .fb-btn {
     background: linear-gradient(135deg,#00897b,#00acc1);
     color: #fff !important; border: none; border-radius: 8px;
-    padding: 0.35rem 0.85rem; font-size: 0.68rem; font-weight: 700;
+    padding: 0.42rem 1.0rem; font-size: 0.80rem; font-weight: 700;
     cursor: pointer; box-shadow: 0 2px 8px rgba(0,137,123,0.35);
     transition: all 0.18s; white-space: nowrap; letter-spacing: 0.02em;
 }
@@ -103,9 +104,9 @@ div[data-testid="column"]:last-child {
     padding: 0.6rem 1rem; border-bottom: 1px solid #e0e0e0; background: #f5f7fa;
     flex-shrink: 0;
 }
-#fb-modal-hdr span { font-size: 0.88rem !important; font-weight: 700; color: #1a1a2e; }
+#fb-modal-hdr span { font-size: 0.92rem !important; font-weight: 700; color: #1a1a2e; }
 #fb-close {
-    background: none; border: none; font-size: 1.25rem; cursor: pointer;
+    background: none; border: none; font-size: 1.3rem; cursor: pointer;
     color: #607d8b; transition: color 0.15s; line-height: 1; padding: 0 0.2rem;
 }
 #fb-close:hover { color: #c0392b; }
@@ -113,21 +114,21 @@ div[data-testid="column"]:last-child {
 
 /* ── Insights strip ── */
 .ins-strip {
-    display: flex; flex-wrap: nowrap; gap: 0.45rem;
-    overflow-x: auto; padding-bottom: 0.15rem;
+    display: flex; flex-wrap: nowrap; gap: 0.5rem;
+    overflow-x: auto; padding-bottom: 0.2rem;
 }
 .ins-strip::-webkit-scrollbar { height: 3px; }
 .ins-strip::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 2px; }
 .ins-card {
-    flex: 1 1 0; min-width: 130px; border-radius: 9px;
-    padding: 0.38rem 0.52rem 0.35rem; display: flex; flex-direction: column;
-    gap: 0.15rem; box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+    flex: 1 1 0; min-width: 145px; border-radius: 10px;
+    padding: 0.45rem 0.6rem 0.4rem; display: flex; flex-direction: column;
+    gap: 0.18rem; box-shadow: 0 1px 5px rgba(0,0,0,0.06);
 }
-.ins-card .ic-hdr { display: flex; align-items: center; gap: 0.25rem; }
-.ins-card .ic-icon { font-size: 0.82rem; flex-shrink: 0; line-height: 1; }
-.ins-card .ic-title { font-size: 0.62rem !important; font-weight: 800 !important;
+.ins-card .ic-hdr { display: flex; align-items: center; gap: 0.28rem; }
+.ins-card .ic-icon { font-size: 0.92rem; flex-shrink: 0; line-height: 1; }
+.ins-card .ic-title { font-size: 0.73rem !important; font-weight: 800 !important;
     color: #1a2e35 !important; line-height: 1.2; }
-.ins-card .ic-body { font-size: 0.59rem !important; color: #455a64 !important; line-height: 1.42; }
+.ins-card .ic-body { font-size: 0.70rem !important; color: #455a64 !important; line-height: 1.45; }
 .ins-card .ic-body b { font-weight: 700; color: #263238 !important; }
 .ins-warm { background: #fff3e0; border-top: 3px solid #e64a19; }
 .ins-cool { background: #e3f2fd; border-top: 3px solid #1976d2; }
@@ -135,10 +136,10 @@ div[data-testid="column"]:last-child {
 .ins-tip  { background: #f3e5f5; border-top: 3px solid #7b1fa2; }
 .ins-info { background: #e0f7fa; border-top: 3px solid #00838f; }
 
-hr { margin: 0.25rem 0 !important; border-color: #dde2e8 !important; }
-.desc { font-size: 0.65rem !important; color: #607d8b !important; line-height: 1.35; }
-.sec-lbl { font-size: 0.63rem !important; font-weight: 800 !important; color: #37474f !important;
-    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
+hr { margin: 0.3rem 0 !important; border-color: #dde2e8 !important; }
+.desc { font-size: 0.78rem !important; color: #607d8b !important; line-height: 1.35; }
+.sec-lbl { font-size: 0.75rem !important; font-weight: 800 !important; color: #37474f !important;
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.28rem; display:block; }
 </style>
 
 <!-- ═══ FEEDBACK MODAL HTML ═══ -->
@@ -449,29 +450,36 @@ def build_room_figure(wall_width, room_depth, wwr, orientation, height=3.0):
         textfont=dict(color='#e53935', size=14),
         showlegend=False, hoverinfo='skip'))
 
-    # ── CAMERA — tight framing, zoom-stable ──────────────────────
-    # Scene ranges — include north arrow space on the X+ side
-    x_lo, x_hi = -W*0.04,  W*1.50
-    y_lo, y_hi = -D*0.04,  D*1.04
-    z_lo, z_hi = -0.04,    H*1.10
+    # ── CAMERA ───────────────────────────────────────────────────
+    # Include north-arrow space: x goes to W*1.48
+    x_lo, x_hi =  0,      W * 1.48
+    y_lo, y_hi =  0,      D
+    z_lo, z_hi =  0,      H
+
+    # Compute diagonal of the visible scene so eye distance stays proportional
+    diag = np.sqrt((x_hi - x_lo)**2 + (y_hi - y_lo)**2 + (z_hi - z_lo)**2)
+    # Eye sits at a fixed multiple of the diagonal, from a south-west-high viewpoint
+    eye_dist = diag * 0.95          # pull back enough to show whole room
+    ex =  eye_dist *  0.55
+    ey = -eye_dist *  0.72
+    ez =  eye_dist *  0.42
 
     fig.update_layout(
         scene=dict(
-            xaxis=dict(visible=False, range=[x_lo, x_hi]),
-            yaxis=dict(visible=False, range=[y_lo, y_hi]),
-            zaxis=dict(visible=False, range=[z_lo, z_hi]),
-            bgcolor='rgba(240,244,248,1)',
-            aspectmode='manual',
-            aspectratio=dict(x=W, y=D*0.70, z=H*0.85),
+            xaxis=dict(visible=False, range=[x_lo - W*0.03, x_hi + W*0.03]),
+            yaxis=dict(visible=False, range=[y_lo - D*0.03, y_hi + D*0.03]),
+            zaxis=dict(visible=False, range=[z_lo - 0.05,   z_hi + H*0.08]),
+            bgcolor='rgba(236,241,247,1)',
+            aspectmode='data',          # keeps proportions, avoids zoom jumps
             camera=dict(
-                eye=dict(x=1.55, y=-1.90, z=1.00),
-                center=dict(x=0.08, y=0.00, z=-0.10),
+                eye=dict(x=ex, y=ey, z=ez),
+                center=dict(x=0, y=0, z=-0.05),
                 up=dict(x=0, y=0, z=1),
             ),
         ),
-        uirevision='locked',          # preserves user's manual rotation
+        uirevision='locked',
         margin=dict(l=0, r=0, b=0, t=0),
-        paper_bgcolor='rgba(240,244,248,1)',
+        paper_bgcolor='rgba(236,241,247,1)',
         showlegend=False,
         autosize=True,
     )
@@ -537,20 +545,20 @@ with col3:
         pct = min(max((pmv+3)/6,0),1)*100
 
         st.markdown(f"""
-        <div style="margin-top:4px;">
-          <div style="background:#dde4ee;border-radius:5px;height:10px;overflow:hidden;position:relative;">
+        <div style="margin-top:5px;">
+          <div style="background:#dde4ee;border-radius:5px;height:11px;overflow:hidden;position:relative;">
             <div style="width:{pct:.1f}%;background:{bc};height:100%;border-radius:5px;"></div>
             <div style="position:absolute;top:0;left:50%;width:2px;height:100%;background:rgba(255,255,255,0.7);"></div>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.59rem;color:#90a4ae;margin-top:2px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:#90a4ae;margin-top:3px;">
             <span>−3</span><span style="color:{bc};font-weight:700;">{lbl}</span><span>+3</span>
           </div>
-          <div style="font-size:0.57rem;color:#aab8c2;margin-top:4px;">ASHRAE 55 comfort: −0.5 to +0.5</div>
+          <div style="font-size:0.68rem;color:#aab8c2;margin-top:5px;">ASHRAE 55 comfort: −0.5 to +0.5</div>
         </div>
-        <div style="margin-top:0.45rem;background:#f5f7fa;border-radius:8px;padding:0.35rem 0.5rem;">
-          <div style="font-size:0.59rem;font-weight:700;color:#546e7a;text-transform:uppercase;
-                      letter-spacing:0.04em;margin-bottom:0.18rem;">Input Summary</div>
-          <table style="width:100%;border-collapse:collapse;font-size:0.59rem;color:#455a64;">
+        <div style="margin-top:0.55rem;background:#f5f7fa;border-radius:9px;padding:0.45rem 0.6rem;">
+          <div style="font-size:0.70rem;font-weight:700;color:#546e7a;text-transform:uppercase;
+                      letter-spacing:0.04em;margin-bottom:0.22rem;">Input Summary</div>
+          <table style="width:100%;border-collapse:collapse;font-size:0.72rem;color:#455a64;">
             <tr><td>🧭 Orientation</td><td style="text-align:right;font-weight:700;">{orientation} ({orient_deg}°)</td></tr>
             <tr><td>📅 Month</td><td style="text-align:right;font-weight:700;">{month_val}</td></tr>
             <tr><td>↔ Wall Width</td><td style="text-align:right;font-weight:700;">{wall_width:.1f} m</td></tr>
