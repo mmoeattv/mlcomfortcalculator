@@ -288,83 +288,116 @@ def build_room_figure(wall_width, room_depth, wwr, orientation, height=3.0):
     W, D, H = wall_width, room_depth, height
     fig = go.Figure()
 
-    light = dict(ambient=0.65, diffuse=0.95, specular=0.25, roughness=0.55, fresnel=0.08)
-    glass_light = dict(ambient=0.25, diffuse=0.45, specular=0.95, roughness=0.03, fresnel=0.85)
-    lpos = dict(x=150, y=-100, z=300)
-
-    def quad(x, y, z, color, opacity=1.0, li=None):
-        kw = dict(x=x,y=y,z=z,i=[0,0],j=[1,3],k=[3,2],
-                  color=color,opacity=opacity,flatshading=True,
-                  showscale=False,showlegend=False)
-        if li:
-            kw['lighting']=li; kw['lightposition']=lpos
+    # ── helpers ──────────────────────────────────────────────────
+    def quad(xs, ys, zs, color, opacity=1.0, lighting=None, lpos=None):
+        """
+        Correct quad → 2 triangles: (0,1,2) + (0,2,3)
+        Vertices must be given in order: 0=BL, 1=BR, 2=TR, 3=TL  (or CW/CCW consistently)
+        """
+        kw = dict(
+            x=xs, y=ys, z=zs,
+            i=[0, 0], j=[1, 2], k=[2, 3],
+            color=color, opacity=opacity,
+            flatshading=True,
+            showscale=False, showlegend=False,
+            hoverinfo='skip',
+        )
+        if lighting:
+            kw['lighting'] = lighting
+        if lpos:
+            kw['lightposition'] = lpos
         return go.Mesh3d(**kw)
 
-    def ln(xs,ys,zs,col='#8fa3b5',w=1.5):
-        return go.Scatter3d(x=xs,y=ys,z=zs,mode='lines',
-                            line=dict(color=col,width=w),showlegend=False)
+    def ln(xs, ys, zs, col='#8fa3b5', w=1.5):
+        return go.Scatter3d(x=xs, y=ys, z=zs, mode='lines',
+                            line=dict(color=col, width=w),
+                            showlegend=False, hoverinfo='skip')
 
-    # Floor — warm timber tone
-    fig.add_trace(quad([0,W,W,0],[0,0,D,D],[0,0,0,0],'#c4aa80',1.0,light))
+    LPOS  = dict(x=2, y=-3, z=5)
+    LIGHT = dict(ambient=0.72, diffuse=0.90, specular=0.15,
+                 roughness=0.60, fresnel=0.05)
+    GLIGHT = dict(ambient=0.30, diffuse=0.50, specular=0.90,
+                  roughness=0.04, fresnel=0.90)
 
-    # Floor planks (subtle lines along depth)
-    plank_step = max(0.3, W/8)
-    for xv in np.arange(plank_step, W, plank_step):
-        fig.add_trace(ln([xv,xv],[0,D],[0.003,0.003],'#b0956a',0.6))
+    # ── FLOOR — warm timber ───────────────────────────────────────
+    # verts: (0,0,0) (W,0,0) (W,D,0) (0,D,0)
+    fig.add_trace(quad([0,W,W,0], [0,0,D,D], [0,0,0,0],
+                       '#c8ae7e', 1.0, LIGHT, LPOS))
+    # plank lines
+    plank = max(0.28, W/10)
+    for xv in np.arange(plank, W, plank):
+        fig.add_trace(ln([xv,xv],[0,D],[0.003,0.003],'#b09460',0.55))
 
-    # Ceiling — off-white
-    fig.add_trace(quad([0,W,W,0],[0,0,D,D],[H,H,H,H],'#f4f6f8',0.50,light))
+    # ── CEILING — off-white ───────────────────────────────────────
+    fig.add_trace(quad([0,W,W,0], [0,0,D,D], [H,H,H,H],
+                       '#f0f3f6', 0.50, LIGHT, LPOS))
 
-    # Back wall — light plaster
-    fig.add_trace(quad([0,W,W,0],[D,D,D,D],[0,0,H,H],'#dce5ee',1.0,light))
+    # ── BACK WALL (y=D) ── verts: BL(0,D,0) BR(W,D,0) TR(W,D,H) TL(0,D,H)
+    fig.add_trace(quad([0,W,W,0], [D,D,D,D], [0,0,H,H],
+                       '#dde5ee', 1.0, LIGHT, LPOS))
 
-    # Side walls
-    fig.add_trace(quad([0,0,0,0],[0,D,D,0],[0,0,H,H],'#d0dae5',1.0,light))
-    fig.add_trace(quad([W,W,W,W],[0,D,D,0],[0,0,H,H],'#d0dae5',1.0,light))
+    # ── LEFT WALL (x=0) ── verts: BL(0,D,0) BR(0,0,0) TR(0,0,H) TL(0,D,H)
+    fig.add_trace(quad([0,0,0,0], [D,0,0,D], [0,0,H,H],
+                       '#cfd9e6', 1.0, LIGHT, LPOS))
 
-    # ── Glazing facade (y = 0) ──
+    # ── RIGHT WALL (x=W) ── verts: BL(W,0,0) BR(W,D,0) TR(W,D,H) TL(W,0,H)
+    fig.add_trace(quad([W,W,W,W], [0,D,D,0], [0,0,H,H],
+                       '#cfd9e6', 1.0, LIGHT, LPOS))
+
+    # ── GLAZING FACADE (y=0) ─────────────────────────────────────
     win_w = W * np.sqrt(wwr)
     win_h = H * np.sqrt(wwr)
-    wx0 = (W-win_w)/2;  wx1 = wx0+win_w
-    wz0 = 0.75;          wz1 = min(wz0+win_h, H-0.08)
+    wx0 = (W - win_w) / 2
+    wx1 = wx0 + win_w
+    wz0 = 0.80
+    wz1 = min(wz0 + win_h, H - 0.10)
 
-    # Wall panels around window
-    for (px,pz) in [
-        ([0,wx0,wx0,0],[0,0,H,H]),
-        ([wx1,W,W,wx1],[0,0,H,H]),
-        ([wx0,wx1,wx1,wx0],[0,0,wz0,wz0]),
-        ([wx0,wx1,wx1,wx0],[wz1,wz1,H,H]),
-    ]:
-        fig.add_trace(quad(px,[0,0,0,0],pz,'#c0ccd8',1.0,light))
+    # Four spandrel panels (correct vertex ordering: BL BR TR TL)
+    # Left panel: x=[0→wx0], z=[0→H]
+    fig.add_trace(quad([0,wx0,wx0,0], [0,0,0,0], [0,0,H,H],
+                       '#c8d4e0', 1.0, LIGHT, LPOS))
+    # Right panel: x=[wx1→W], z=[0→H]
+    fig.add_trace(quad([wx1,W,W,wx1], [0,0,0,0], [0,0,H,H],
+                       '#c8d4e0', 1.0, LIGHT, LPOS))
+    # Bottom panel: x=[wx0→wx1], z=[0→wz0]
+    fig.add_trace(quad([wx0,wx1,wx1,wx0], [0,0,0,0], [0,0,wz0,wz0],
+                       '#c8d4e0', 1.0, LIGHT, LPOS))
+    # Top panel: x=[wx0→wx1], z=[wz1→H]
+    fig.add_trace(quad([wx0,wx1,wx1,wx0], [0,0,0,0], [wz1,wz1,H,H],
+                       '#c8d4e0', 1.0, LIGHT, LPOS))
 
     # Window sill
-    fig.add_trace(quad([wx0,wx1,wx1,wx0],[0,0,0.1,0.1],[wz0,wz0,wz0,wz0],'#9db0c0',1.0,light))
+    fig.add_trace(quad([wx0,wx1,wx1,wx0], [0,0,0.12,0.12], [wz0,wz0,wz0,wz0],
+                       '#9ab0c2', 1.0, LIGHT, LPOS))
 
-    # Glazing — two panes
-    mid_x = (wx0+wx1)/2
-    for (gx0,gx1) in [(wx0+0.04, mid_x-0.03),(mid_x+0.03, wx1-0.04)]:
+    # Two glazing panes
+    mid_x = (wx0 + wx1) / 2
+    panes = [(wx0+0.05, mid_x-0.03), (mid_x+0.03, wx1-0.05)]
+    for (gx0, gx1) in panes:
+        # pane: BL BR TR TL
         fig.add_trace(quad(
-            [gx0,gx1,gx1,gx0],[0,0,0,0],
-            [wz0+0.04,wz0+0.04,wz1-0.03,wz1-0.03],
-            '#a8dff0',0.38,glass_light))
+            [gx0, gx1, gx1, gx0], [0,0,0,0],
+            [wz0+0.05, wz0+0.05, wz1-0.04, wz1-0.04],
+            '#9dd8ef', 0.38, GLIGHT, LPOS))
         # reflection sheen
-        rw = (gx1-gx0)*0.18
+        rw = (gx1 - gx0) * 0.22
         fig.add_trace(quad(
-            [gx0+rw,gx0+rw*2.5,gx0+rw*2.5,gx0+rw],[0,0,0,0],
-            [wz1-0.25,wz1-0.25,wz1-0.06,wz1-0.06],
-            '#ffffff',0.12,None))
+            [gx0+rw, gx0+rw*2.2, gx0+rw*2.2, gx0+rw], [0,0,0,0],
+            [wz1-0.28, wz1-0.28, wz1-0.08, wz1-0.08],
+            '#ffffff', 0.14, None, None))
 
-    # Frame
-    FRAME = '#4a5a68'
-    mid_z = (wz0+wz1)/2
-    for (xs,zs,w) in [
-        ([wx0,wx1],[wz0,wz0],4),([wx0,wx1],[wz1,wz1],4),
-        ([wx0,wx0],[wz0,wz1],4),([wx1,wx1],[wz0,wz1],4),
-        ([mid_x,mid_x],[wz0,wz1],3),([wx0,wx1],[mid_z,mid_z],2),
+    # Window frame lines
+    FC = '#3d4f5e'
+    mid_z = (wz0 + wz1) / 2
+    for (xs, zs, lw) in [
+        ([wx0,wx1],[wz0,wz0],4), ([wx0,wx1],[wz1,wz1],4),
+        ([wx0,wx0],[wz0,wz1],4), ([wx1,wx1],[wz0,wz1],4),
+        ([mid_x,mid_x],[wz0,wz1],3), ([wx0,wx1],[mid_z,mid_z],2),
     ]:
-        fig.add_trace(ln(xs,[0,0],zs,FRAME,w))
+        fig.add_trace(ln(xs, [0,0], zs, FC, lw))
 
     # Room structural edges
+    EC = '#6e8ea4'
     for (xs,ys,zs) in [
         ([0,W],[0,0],[0,0]),([0,W],[D,D],[0,0]),
         ([0,0],[0,D],[0,0]),([W,W],[0,D],[0,0]),
@@ -373,87 +406,72 @@ def build_room_figure(wall_width, room_depth, wwr, orientation, height=3.0):
         ([0,0],[0,0],[0,H]),([W,W],[0,0],[0,H]),
         ([0,0],[D,D],[0,H]),([W,W],[D,D],[0,H]),
     ]:
-        fig.add_trace(ln(xs,ys,zs,'#7a95aa',1.2))
+        fig.add_trace(ln(xs,ys,zs,EC,1.4))
 
-    # Light rays
-    for rx in np.linspace(wx0+win_w*0.15, wx1-win_w*0.15, 5):
+    # Subtle light rays
+    for rx in np.linspace(wx0+win_w*0.18, wx1-win_w*0.18, 4):
         fig.add_trace(go.Scatter3d(
-            x=[rx, rx+(rx-W/2)*0.1], y=[0.01, D*0.55],
-            z=[(wz0+wz1)/2, max(0.05,(wz0+wz1)/2-0.4)],
-            mode='lines', line=dict(color='rgba(255,230,140,0.10)',width=2.5), showlegend=False))
+            x=[rx, rx+(rx-W/2)*0.08], y=[0.01, D*0.50],
+            z=[(wz0+wz1)/2, max(0.1,(wz0+wz1)/2-0.35)],
+            mode='lines',
+            line=dict(color='rgba(255,224,120,0.09)', width=2),
+            showlegend=False, hoverinfo='skip'))
 
     # ── NORTH ARROW ──────────────────────────────────────────────
-    # Glazing is on y=0 face → facade faces the -Y direction in model space.
-    # The orientation tells us which compass direction the facade faces.
-    # We want the N arrow to point toward True North relative to that.
-    orient_map_deg = {"North":0,"East":90,"South":180,"West":270}
-    az = orient_map_deg.get(orientation, 0)   # degrees: facade faces this compass direction
-    # True North in model XY coords (y axis = into room = "facade normal direction")
-    # If facade faces South (az=180): North is behind the facade → +Y direction → north_y=+1
-    # If facade faces North (az=0):   North is in front of facade → -Y direction → north_y=-1
-    az_r = np.radians(az)
-    north_x = np.sin(az_r)     # x component of North in model plan
-    north_y = -np.cos(az_r)    # y component of North in model plan
+    orient_deg_map = {"North":0,"East":90,"South":180,"West":270}
+    az_deg  = orient_deg_map.get(orientation, 0)
+    az_r    = np.radians(az_deg)
+    north_x =  np.sin(az_r)
+    north_y = -np.cos(az_r)
 
-    # Compass anchor — outside room near front-right, at floor level
-    alen = min(W,D) * 0.25
-    cx = W + max(W*0.15, 0.45)
-    cy = D * 0.18
-    cz = 0.01
+    alen = min(W, D) * 0.22
+    cx   = W * 1.22
+    cy   = D * 0.15
+    cz   = 0.01
 
-    tip_x = cx + north_x*alen
-    tip_y = cy + north_y*alen
-    tail_x = cx - north_x*alen*0.55
-    tail_y = cy - north_y*alen*0.55
+    tip_x  = cx + north_x * alen
+    tip_y  = cy + north_y * alen
+    tail_x = cx - north_x * alen * 0.6
+    tail_y = cy - north_y * alen * 0.6
 
-    # Shaft
-    fig.add_trace(ln([tail_x,tip_x],[tail_y,tip_y],[cz,cz],'#e53935',4))
-
-    # Arrowhead wings
-    perp_x = -north_y*0.18*alen
-    perp_y =  north_x*0.18*alen
-    bx = tip_x - north_x*0.26*alen
-    by = tip_y - north_y*0.26*alen
-    for s in [1,-1]:
-        fig.add_trace(ln([tip_x,bx+s*perp_x],[tip_y,by+s*perp_y],[cz,cz],'#e53935',4))
-
-    # S tail tick
-    fig.add_trace(ln([cx,tail_x],[cy,tail_y],[cz,cz],'#90a4ae',1.8))
-
-    # N label
+    fig.add_trace(ln([tail_x, tip_x],[tail_y, tip_y],[cz,cz],'#e53935',3.5))
+    perp_x = -north_y * 0.20 * alen
+    perp_y =  north_x * 0.20 * alen
+    bx = tip_x - north_x * 0.28 * alen
+    by = tip_y - north_y * 0.28 * alen
+    for s in [1, -1]:
+        fig.add_trace(ln([tip_x, bx+s*perp_x],[tip_y, by+s*perp_y],[cz,cz],'#e53935',3.5))
     fig.add_trace(go.Scatter3d(
-        x=[tip_x+north_x*0.08*alen],
-        y=[tip_y+north_y*0.08*alen],
-        z=[cz+0.18],
+        x=[tip_x + north_x*0.09*alen],
+        y=[tip_y + north_y*0.09*alen],
+        z=[cz + 0.20],
         mode='text', text=['N'],
-        textfont=dict(color='#e53935',size=13),
-        showlegend=False))
+        textfont=dict(color='#e53935', size=14),
+        showlegend=False, hoverinfo='skip'))
 
-    # Compass circle (dashed ring) via 32-point polygon
-    angles = np.linspace(0,2*np.pi,33)
-    r = alen*0.18
-    fig.add_trace(go.Scatter3d(
-        x=cx+r*np.cos(angles), y=cy+r*np.sin(angles),
-        z=np.full(33,cz),
-        mode='lines', line=dict(color='#b0bec5',width=1), showlegend=False))
+    # ── CAMERA — tight framing, zoom-stable ──────────────────────
+    # Scene ranges — include north arrow space on the X+ side
+    x_lo, x_hi = -W*0.04,  W*1.50
+    y_lo, y_hi = -D*0.04,  D*1.04
+    z_lo, z_hi = -0.04,    H*1.10
 
-    # ── CAMERA — fixed view, aspectmode='data' prevents zoom jumps ──
     fig.update_layout(
         scene=dict(
-            xaxis=dict(visible=False, range=[-W*0.05, W*1.55]),
-            yaxis=dict(visible=False, range=[-D*0.12, D*1.08]),
-            zaxis=dict(visible=False, range=[-0.05, H*1.18]),
-            bgcolor='rgba(0,0,0,0)',
-            aspectmode='data',
+            xaxis=dict(visible=False, range=[x_lo, x_hi]),
+            yaxis=dict(visible=False, range=[y_lo, y_hi]),
+            zaxis=dict(visible=False, range=[z_lo, z_hi]),
+            bgcolor='rgba(240,244,248,1)',
+            aspectmode='manual',
+            aspectratio=dict(x=W, y=D*0.70, z=H*0.85),
             camera=dict(
-                eye=dict(x=1.60, y=-2.05, z=1.10),
-                center=dict(x=0.10, y=0.02, z=-0.08),
-                up=dict(x=0,y=0,z=1)
+                eye=dict(x=1.55, y=-1.90, z=1.00),
+                center=dict(x=0.08, y=0.00, z=-0.10),
+                up=dict(x=0, y=0, z=1),
             ),
         ),
-        uirevision='camera_lock',
-        margin=dict(l=0,r=0,b=0,t=0),
-        paper_bgcolor='rgba(0,0,0,0)',
+        uirevision='locked',          # preserves user's manual rotation
+        margin=dict(l=0, r=0, b=0, t=0),
+        paper_bgcolor='rgba(240,244,248,1)',
         showlegend=False,
         autosize=True,
     )
