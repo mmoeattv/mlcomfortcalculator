@@ -7,6 +7,7 @@
 # Deps: streamlit plotly joblib numpy pandas xgboost scikit-learn
 # =============================================================================
 
+# -*- coding: utf-8 -*-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -21,174 +22,210 @@ from plotly.subplots import make_subplots
 # PAGE CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="S-TCML · Thermal Comfort",
-    page_icon="🌡️",
+    page_title="S-TCML - Thermal Comfort",
+    page_icon=":thermometer:",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CSS
+# THEME STATE
 # ─────────────────────────────────────────────────────────────────────────────
-st.markdown("""
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = True
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CSS — injected dynamically based on theme
+# ─────────────────────────────────────────────────────────────────────────────
+def inject_css(dark: bool):
+    if dark:
+        # ── Dark palette ──
+        bg       = "#0d1117"
+        s1       = "#161b26"
+        s2       = "#1c2333"
+        s3       = "#222a3a"
+        border   = "#2d3650"
+        text     = "#ffffff"
+        text_dim = "#a0aabf"
+        text_fnt = "#5a6480"
+        gold_dim = "rgba(240,165,0,0.15)"
+        sel_bg   = "#1c2333"
+        pop_bg   = "#1c2333"
+        metric_bg= "#1c2333"
+        gauge_axis_color = "#a0aabf"
+    else:
+        # ── Light palette ──
+        bg       = "#f4f6fa"
+        s1       = "#ffffff"
+        s2       = "#eef0f6"
+        s3       = "#e4e8f0"
+        border   = "#c8cedc"
+        text     = "#0d1117"
+        text_dim = "#4a5270"
+        text_fnt = "#7a8299"
+        gold_dim = "rgba(200,120,0,0.10)"
+        sel_bg   = "#ffffff"
+        pop_bg   = "#ffffff"
+        metric_bg= "#ffffff"
+        gauge_axis_color = "#4a5270"
+
+    gold = "#f0a500"
+
+    st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
 
-:root {
-    --bg:       #0d1117;
-    --s1:       #161b26;
-    --s2:       #1c2333;
-    --s3:       #222a3a;
-    --border:   #2d3650;
-    --gold:     #f0a500;
-    --gold-dim: rgba(240,165,0,0.15);
-    --blue:     #3d9be9;
-    --green:    #3ecf6e;
-    --red:      #e84040;
-    --orange:   #e87040;
-    --text:     #ffffff;
-    --text-dim: #a0aabf;
-    --text-fnt: #5a6480;
+:root {{
+    --bg:       {bg};
+    --s1:       {s1};
+    --s2:       {s2};
+    --s3:       {s3};
+    --border:   {border};
+    --gold:     {gold};
+    --gold-dim: {gold_dim};
+    --text:     {text};
+    --text-dim: {text_dim};
+    --text-fnt: {text_fnt};
     --ff-head:  'Syne', sans-serif;
     --ff-body:  'IBM Plex Sans', sans-serif;
     --ff-mono:  'IBM Plex Mono', monospace;
-}
+}}
 
 /* ── Kill chrome ── */
-#MainMenu, footer, header { display:none !important; }
-[data-testid="collapsedControl"] { display:none !important; }
-[data-testid="stSidebar"]        { display:none !important; }
+#MainMenu, footer, header {{ display:none !important; }}
+[data-testid="collapsedControl"] {{ display:none !important; }}
+[data-testid="stSidebar"]        {{ display:none !important; }}
 
 /* ── Single-screen lock ── */
-html, body { overflow:hidden !important; height:100vh !important; }
+html, body {{ overflow:hidden !important; height:100vh !important; }}
 
 html, body,
 [data-testid="stAppViewContainer"],
 [data-testid="stAppViewBlockContainer"],
-.main, .block-container {
-    background-color: var(--bg) !important;
-    color: var(--text) !important;
+.main, .block-container {{
+    background-color: {bg} !important;
+    color: {text} !important;
     font-family: var(--ff-body) !important;
-}
-.block-container {
+}}
+.block-container {{
     padding: 0.4rem 0.9rem 0.1rem !important;
     max-width: 100% !important;
-}
+}}
 
-/* ── ALL text white on dark bg ── */
+/* ── All text ── */
 p, span, label, div, h1, h2, h3, h4, li,
 [data-testid="stMarkdownContainer"] *,
 [data-testid="metric-container"] *,
 .stSelectbox label, .stSlider label,
 .stSelectbox div, .stSlider div,
 [data-baseweb="select"] *, [data-baseweb="slider"] *,
-[data-testid="stCaptionContainer"] {
-    color: var(--text) !important;
-}
-caption, .caption, [data-testid="stCaptionContainer"] * {
-    color: var(--text-dim) !important;
-}
+[data-testid="stCaptionContainer"] {{
+    color: {text} !important;
+}}
+caption, .caption, [data-testid="stCaptionContainer"] * {{
+    color: {text_dim} !important;
+}}
 
-/* ── Streamlit metric cards ── */
-[data-testid="metric-container"] {
-    background: var(--s2);
-    border: 1px solid var(--border);
+/* ── Metric cards ── */
+[data-testid="metric-container"] {{
+    background: {metric_bg};
+    border: 1px solid {border};
     border-radius: 6px;
     padding: 5px 9px !important;
-}
-[data-testid="stMetricValue"] {
+}}
+[data-testid="stMetricValue"] {{
     font-family: var(--ff-head) !important;
     font-size: 1rem !important;
-    color: var(--text) !important;
-}
-[data-testid="stMetricLabel"] {
+    color: {text} !important;
+}}
+[data-testid="stMetricLabel"] {{
     font-size: 0.6rem !important;
     text-transform: uppercase;
     letter-spacing: .08em;
-    color: var(--text-dim) !important;
-}
+    color: {text_dim} !important;
+}}
 
 /* ── Select box ── */
-[data-baseweb="select"] > div {
-    background: var(--s2) !important;
-    border-color: var(--border) !important;
-}
+[data-baseweb="select"] > div {{
+    background: {sel_bg} !important;
+    border-color: {border} !important;
+}}
 [data-baseweb="select"] span,
-[data-baseweb="select"] div { color: var(--text) !important; }
-[data-baseweb="popover"] * {
-    background: var(--s2) !important;
-    color: var(--text) !important;
-}
+[data-baseweb="select"] div {{ color: {text} !important; }}
+[data-baseweb="popover"] * {{
+    background: {pop_bg} !important;
+    color: {text} !important;
+}}
 
 /* ── Slider thumb ── */
-[data-testid="stSlider"] [data-baseweb="slider"] div[role="slider"] {
-    background: var(--gold) !important;
-}
+[data-testid="stSlider"] [data-baseweb="slider"] div[role="slider"] {{
+    background: {gold} !important;
+}}
 
 /* ── Button ── */
-.stButton > button {
-    background: var(--gold) !important;
-    color: #000 !important;
+.stButton > button {{
+    background: {gold} !important;
+    color: #000000 !important;
     border: none !important;
     border-radius: 6px !important;
     font-family: var(--ff-head) !important;
     font-weight: 700 !important;
     font-size: 0.8rem !important;
     width: 100%;
-}
+}}
 
 /* ── Expander ── */
-[data-testid="stExpander"] * { color: var(--text-dim) !important; }
+[data-testid="stExpander"] * {{ color: {text_dim} !important; }}
 
 /* ── Custom components ── */
-.card-title {
+.card-title {{
     font-family: var(--ff-mono);
     font-size: 0.58rem;
     letter-spacing: .14em;
     text-transform: uppercase;
-    color: var(--text-dim);
-    border-bottom: 1px solid var(--border);
+    color: {text_dim};
+    border-bottom: 1px solid {border};
     padding-bottom: 4px;
     margin-bottom: 7px;
-}
-.hdr {
+}}
+.hdr {{
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 3px 0 5px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid {border};
     margin-bottom: 6px;
-}
-.hdr-title {
+}}
+.hdr-title {{
     font-family: var(--ff-head);
     font-size: 1.05rem;
     font-weight: 800;
-    color: var(--text);
-}
-.hdr-sub {
+    color: {text};
+}}
+.hdr-sub {{
     font-family: var(--ff-mono);
     font-size: 0.58rem;
-    color: var(--text-fnt);
+    color: {text_fnt};
     letter-spacing: .06em;
-}
-.pill {
+}}
+.pill {{
     font-family: var(--ff-mono);
     font-size: 0.56rem;
-    background: var(--gold-dim);
+    background: {gold_dim};
     border: 1px solid rgba(240,165,0,.3);
-    color: var(--gold);
+    color: {gold};
     padding: 1px 7px;
     border-radius: 20px;
     white-space: nowrap;
-}
-.big-val {
+}}
+.big-val {{
     font-family: var(--ff-head);
     font-size: 2.3rem;
     font-weight: 800;
     line-height: 1;
-    color: var(--text);
-}
-.badge {
+    color: {text};
+}}
+.badge {{
     display: inline-block;
     font-family: var(--ff-mono);
     font-size: 0.65rem;
@@ -196,49 +233,51 @@ caption, .caption, [data-testid="stCaptionContainer"] * {
     border-radius: 20px;
     border: 1px solid;
     margin-top: 3px;
-    color: var(--text);
-}
-.result-card {
-    background: var(--s1);
-    border: 1px solid var(--border);
+    color: {text};
+}}
+.result-card {{
+    background: {s1};
+    border: 1px solid {border};
     border-radius: 8px;
     padding: 7px 10px;
-}
-.interval-row {
+}}
+.interval-row {{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.67rem;
-    color: var(--text-dim);
-    background: var(--s3);
+    color: {text_dim};
+    background: {s3};
     border-radius: 5px;
     padding: 5px 8px;
     margin-top: 5px;
     line-height: 1.7;
-}
-.interval-row b { color: var(--text); }
-.guidance-box {
-    background: var(--s2);
-    border-left: 3px solid var(--gold);
+}}
+.interval-row b {{ color: {text}; }}
+.guidance-box {{
+    background: {s2};
+    border-left: 3px solid {gold};
     border-radius: 0 6px 6px 0;
     padding: 6px 10px;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.73rem;
-    color: var(--text);
+    color: {text};
     line-height: 1.55;
     margin-top: 5px;
-}
-.ref-box {
+}}
+.ref-box {{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.62rem;
-    color: var(--text-dim);
+    color: {text_dim};
     line-height: 1.7;
-    background: var(--s3);
+    background: {s3};
     border-radius: 6px;
     padding: 6px 9px;
     margin-top: 6px;
-}
-.ref-box b { color: var(--text); }
+}}
+.ref-box b {{ color: {text}; }}
 </style>
 """, unsafe_allow_html=True)
+
+inject_css(st.session_state.dark_mode)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONSTANTS
@@ -246,27 +285,27 @@ caption, .caption, [data-testid="stCaptionContainer"] * {
 MODELS_DIR = str(pathlib.Path(__file__).parent.resolve())
 FEATURES   = ["month", "wall_width", "room_depth", "orientation", "WWR"]
 
-ORIENTATION_MAP = {"North ↑": 0, "East →": 90, "South ↓": 180, "West ←": 270}
+ORIENTATION_MAP = {"North up": 0, "East right": 90, "South down": 180, "West left": 270}
 MONTH_SHORT = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",
                7:"Jul",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
 MONTH_FULL  = {1:"January",2:"February",3:"March",4:"April",5:"May",6:"June",
                7:"July",8:"August",9:"September",10:"October",11:"November",12:"December"}
-SEASON_MAP  = {12:("Winter","❄️"),1:("Winter","❄️"),2:("Winter","❄️"),
-               3:("Spring","🌱"),4:("Spring","🌱"),5:("Spring","🌱"),
-               6:("Summer","☀️"),7:("Summer","☀️"),8:("Summer","☀️"),
-               9:("Autumn","🍂"),10:("Autumn","🍂"),11:("Autumn","🍂")}
+SEASON_MAP  = {12:("Winter","[W]"),1:("Winter","[W]"),2:("Winter","[W]"),
+               3:("Spring","[Sp]"),4:("Spring","[Sp]"),5:("Spring","[Sp]"),
+               6:("Summer","[Su]"),7:("Summer","[Su]"),8:("Summer","[Su]"),
+               9:("Autumn","[Au]"),10:("Autumn","[Au]"),11:("Autumn","[Au]")}
 
 def pmv_label(v):
     if   v < -2.5: return "Cold",           "#3d9be9"
     elif v < -1.5: return "Cool",           "#6db8f0"
     elif v < -0.5: return "Slightly Cool",  "#9dd0f5"
-    elif v <=  0.5: return "✅ Comfortable", "#3ecf6e"
+    elif v <=  0.5: return "Comfortable",    "#3ecf6e"
     elif v <=  1.5: return "Slightly Warm", "#f0c040"
     elif v <=  2.5: return "Warm",          "#e87040"
     else:           return "Hot",           "#e84040"
 
 def ppd_label(v):
-    if   v <= 10: return "✅ Acceptable",         "#3ecf6e"
+    if   v <= 10: return "Acceptable",              "#3ecf6e"
     elif v <= 20: return "Marginal",               "#f0c040"
     elif v <= 40: return "Uncomfortable",          "#e87040"
     else:         return "Highly Uncomfortable",   "#e84040"
@@ -555,16 +594,33 @@ def make_3d_room(wall_width, room_depth, wwr, orientation_label, pmv_val=None):
 models, load_errors = load_models()
 
 # ─────────────────────────────────────────────────────────────────────────────
+# THEME COLORS — used in both CSS and inline HTML blocks
+# ─────────────────────────────────────────────────────────────────────────────
+dark = st.session_state.dark_mode
+T = {
+    "bg":       "#0d1117" if dark else "#f4f6fa",
+    "s1":       "#161b26" if dark else "#ffffff",
+    "s2":       "#1c2333" if dark else "#eef0f6",
+    "s3":       "#222a3a" if dark else "#e4e8f0",
+    "border":   "#2d3650" if dark else "#c8cedc",
+    "text":     "#ffffff" if dark else "#0d1117",
+    "text_dim": "#a0aabf" if dark else "#4a5270",
+    "gold":     "#f0a500",
+    "toggle_label": "Light Mode" if dark else "Dark Mode",
+    "toggle_icon":  "☀" if dark else "☽",
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # HEADER
 # ─────────────────────────────────────────────────────────────────────────────
-hdr_left, hdr_right = st.columns([2.2, 1], gap="small")
+hdr_left, hdr_mid, hdr_right = st.columns([2.2, 0.38, 0.8], gap="small")
 
 with hdr_left:
-    st.markdown("""
+    st.markdown(f"""
 <div class="hdr">
   <div>
-    <div class="hdr-title">🌡️ &nbsp;S-TCML &nbsp;·&nbsp; Thermal Comfort Predictor</div>
-    <div class="hdr-sub">SURROGATE ML &nbsp;·&nbsp; WEST CAIRO OFFICE BUILDINGS &nbsp;·&nbsp; ENERGYPLUS + XGBOOST</div>
+    <div class="hdr-title">S-TCML &nbsp;&middot;&nbsp; Thermal Comfort Predictor</div>
+    <div class="hdr-sub">SURROGATE ML &nbsp;&middot;&nbsp; WEST CAIRO OFFICE BUILDINGS &nbsp;&middot;&nbsp; ENERGYPLUS + XGBOOST</div>
   </div>
   <span class="pill">PMV / PPD</span>
   <span class="pill">90% Quantile Intervals</span>
@@ -573,10 +629,24 @@ with hdr_left:
 </div>
 """, unsafe_allow_html=True)
 
+with hdr_mid:
+    st.markdown(f"""
+<div style="padding:3px 0 5px;border-bottom:1px solid {T['border']};height:100%;
+            display:flex;flex-direction:column;justify-content:center;align-items:center;">
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:0.58rem;
+              color:{T['text_dim']};text-align:center;margin-bottom:4px;">
+    Display
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    if st.button(f"{T['toggle_icon']}  {T['toggle_label']}", key="theme_toggle"):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+
 with hdr_right:
-    st.markdown("""
+    st.markdown(f"""
 <div style="display:flex;align-items:center;gap:12px;padding:3px 0 5px;
-            border-bottom:1px solid #2d3650;height:100%;">
+            border-bottom:1px solid {T['border']};height:100%;">
   <div>
     <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=R78MZ3FzakWFcN8uuKSnuwjDcFCkSUpOgNR3aIEY0WRUM01LNEEyWDFMOEFZWEJNRUwySzlXWDkwMC4u"
        target="_blank"
@@ -587,13 +657,14 @@ with hdr_right:
       &#128172; Share Feedback
     </a>
     <div style="font-family:'IBM Plex Mono',monospace;font-size:0.58rem;
-                color:#a0aabf;margin-top:4px;line-height:1.4;">
+                color:{T['text_dim']};margin-top:4px;line-height:1.4;">
       Your feedback helps improve this tool.<br>
-      It takes less than 2 minutes &#8212; thank you!
+      It takes less than 2 minutes &mdash; thank you!
     </div>
   </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3-COLUMN LAYOUT
@@ -604,27 +675,27 @@ col_in, col_res, col_3d = st.columns([1.0, 1.25, 1.75], gap="small")
 # COL 1 — INPUTS
 # ══════════════════════════════════════════
 with col_in:
-    st.markdown('<div class="card-title">⚙ Input Parameters</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">INPUT PARAMETERS</div>', unsafe_allow_html=True)
 
     month = st.select_slider(
-        "📅 Month",
+        "Month",
         options=list(range(1, 13)),
         value=7,
         format_func=lambda m: MONTH_SHORT[m],
     )
     season_name, season_emoji = SEASON_MAP[month]
-    st.caption(f"{season_emoji} {season_name}  ·  {MONTH_FULL[month]}")
+    st.caption(f"{season_emoji} {season_name}  -  {MONTH_FULL[month]}")
 
     orientation_label = st.selectbox(
-        "🧭 Glazing Orientation",
-        ["North ↑", "East →", "South ↓", "West ←"],
+        "Glazing Orientation",
+        ["North up", "East right", "South down", "West left"],
         index=2,
     )
     ori_deg = ORIENTATION_MAP[orientation_label]
 
-    wall_width = st.slider("🧱 Wall Width (m)  (exterior glazed wall width)",  2.0, 9.0, 5.0, 0.5)
-    room_depth = st.slider("📐 Room Depth (m)",  2.0, 9.0, 5.0, 0.5)
-    wwr        = st.slider("🪟 WWR",             0.10, 0.95, 0.40, 0.05, format="%.2f")
+    wall_width = st.slider("Wall Width (m)  (exterior glazed wall width)", 2.0, 9.0, 5.0, 0.5)
+    room_depth = st.slider("Room Depth (m)", 2.0, 9.0, 5.0, 0.5)
+    wwr        = st.slider("WWR (Window-to-Wall Ratio)", 0.10, 0.95, 0.40, 0.05, format="%.2f")
     st.caption(f"Glazing covers {wwr:.0%} of facade")
 
     st.markdown("""
@@ -652,14 +723,14 @@ with col_res:
     pmv_lbl, pmv_col = pmv_label(pmv)
     ppd_lbl, ppd_col = ppd_label(ppd)
 
-    st.markdown('<div class="card-title">📊 Prediction Results</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-title">PREDICTION RESULTS</div>', unsafe_allow_html=True)
 
     r1, r2 = st.columns(2)
     with r1:
         st.markdown(f"""
         <div class="result-card" style="border-top:3px solid {pmv_col};">
           <div style="font-family:'IBM Plex Mono';font-size:0.58rem;
-                      color:#a0aabf;letter-spacing:.1em;">PMV</div>
+                      color:{T['text_dim']};letter-spacing:.1em;">PMV</div>
           <div class="big-val" style="color:{pmv_col};">{pmv:+.2f}</div>
           <span class="badge" style="color:{pmv_col};border-color:{pmv_col};">{pmv_lbl}</span>
         </div>""", unsafe_allow_html=True)
@@ -670,7 +741,7 @@ with col_res:
         st.markdown(f"""
         <div class="result-card" style="border-top:3px solid {ppd_col};">
           <div style="font-family:'IBM Plex Mono';font-size:0.58rem;
-                      color:#a0aabf;letter-spacing:.1em;">PPD</div>
+                      color:{T['text_dim']};letter-spacing:.1em;">PPD</div>
           <div class="big-val" style="color:{ppd_col};">{ppd:.1f}%</div>
           <span class="badge" style="color:{ppd_col};border-color:{ppd_col};">{ppd_lbl}</span>
         </div>""", unsafe_allow_html=True)
@@ -679,7 +750,7 @@ with col_res:
 
     # Intervals
     if has_qi:
-        st.markdown('<div class="card-title" style="margin-top:3px;">〰 90% Prediction Intervals</div>',
+        st.markdown('<div class="card-title" style="margin-top:3px;">~ 90% PREDICTION INTERVALS</div>',
                     unsafe_allow_html=True)
         st.plotly_chart(interval_chart(results), use_container_width=True,
                         config={"displayModeBar": False})
@@ -700,18 +771,18 @@ with col_res:
               <span style="color:#5a6480;">width</span> <b>{hi-lo:.1f}%</b>
             </div>""", unsafe_allow_html=True)
 
-        st.markdown("""
-<div style="font-family:'IBM Plex Mono';font-size:0.62rem;color:#a0aabf;
-            background:#1c2333;border-radius:5px;padding:6px 9px;margin-top:5px;
-            line-height:1.75;border-left:2px solid #2d3650;">
-  <b style="color:#ffffff;">How to read the intervals:</b><br>
+        st.markdown(f"""
+<div style="font-family:'IBM Plex Mono';font-size:0.62rem;color:{T['text_dim']};
+            background:{T['s2']};border-radius:5px;padding:6px 9px;margin-top:5px;
+            line-height:1.75;border-left:2px solid {T['border']};">
+  <b style="color:{T['text']};">How to read the intervals:</b><br>
   <b style="color:#f0a500;">&#9670; Gold diamond</b> = point prediction (XGBoost best model)<br>
-  <b style="color:#ffffff;">q05</b> = lower bound &nbsp;&middot;&nbsp;
+  <b style="color:{T['text']};">q05</b> = lower bound &nbsp;&middot;&nbsp;
   <b style="color:#f0a500;">q50</b> = median &nbsp;&middot;&nbsp;
-  <b style="color:#ffffff;">q95</b> = upper bound<br>
-  The shaded band is the <b style="color:#ffffff;">90% prediction interval</b> &mdash;
+  <b style="color:{T['text']};">q95</b> = upper bound<br>
+  The shaded band is the <b style="color:{T['text']};">90% prediction interval</b> &mdash;
   the true value has a 90% probability of falling within this range.
-  A <b style="color:#ffffff;">narrow band</b> indicates higher model confidence.
+  A <b style="color:{T['text']};">narrow band</b> indicates higher model confidence.
 </div>
 """, unsafe_allow_html=True)
 
@@ -721,7 +792,7 @@ with col_res:
 # COL 3 — 3D ROOM
 # ══════════════════════════════════════════
 with col_3d:
-    st.markdown('<div class="card-title">🏗 3D Room Geometry — Live Preview</div>',
+    st.markdown('<div class="card-title">3D ROOM GEOMETRY - LIVE PREVIEW</div>',
                 unsafe_allow_html=True)
 
     fig_3d = make_3d_room(wall_width, room_depth, wwr, orientation_label,
@@ -750,7 +821,7 @@ with col_3d:
         insight_text  = f"<b>Thermally comfortable</b> &mdash; PMV {pmv:+.2f}, PPD {ppd:.1f}%. Meets ASHRAE 55 criteria &#x2705;"
 
     st.markdown(f"""
-<div style="margin-top:8px;background:#1c2333;border-left:3px solid {insight_color};
+<div style="margin-top:8px;background:{T['s2']};border-left:3px solid {insight_color};
             border-radius:0 8px 8px 0;padding:9px 13px;">
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
               letter-spacing:.12em;text-transform:uppercase;
@@ -758,30 +829,30 @@ with col_3d:
     &#128161; Design Insights
   </div>
   <div style="font-family:'IBM Plex Mono',monospace;font-size:0.82rem;
-              color:#ffffff;line-height:1.65;">
+              color:{T['text']};line-height:1.65;">
     {insight_text}
   </div>
 </div>
 """, unsafe_allow_html=True)
 
     if load_errors:
-        with st.expander(f"⚠️ {len(load_errors)} model file(s) missing"):
+        with st.expander(f"WARNING: {len(load_errors)} model file(s) missing"):
             for e in load_errors:
                 st.caption(f"• {e}")
             st.caption(f"Expected path: {MODELS_DIR}")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FULL-WIDTH ABOUT ROW  — spans from left edge to right edge
+# FULL-WIDTH ABOUT ROW
 # ─────────────────────────────────────────────────────────────────────────────
-st.markdown("""
-<div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#a0aabf;
+st.markdown(f"""
+<div style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:{T['text_dim']};
             background:rgba(240,165,0,0.06);border-left:3px solid #f0a500;
             border-radius:0 6px 6px 0;padding:8px 16px;margin-top:6px;
             line-height:1.8;white-space:nowrap;">
   <b style="color:#f0a500;">About this Tool</b> &nbsp;&mdash;&nbsp;
-  This tool is part of a <b style="color:#ffffff;">PhD research project</b>. &nbsp;
-  It predicts PMV &amp; PPD for <b style="color:#ffffff;">air-conditioned</b> office rooms in
-  <b style="color:#ffffff;">West Cairo, Egypt</b> using a surrogate ML model trained on
+  This tool is part of a <b style="color:{T['text']};">PhD research project</b>. &nbsp;
+  It predicts PMV &amp; PPD for <b style="color:{T['text']};">air-conditioned</b> office rooms in
+  <b style="color:{T['text']};">West Cairo, Egypt</b> using a surrogate ML model trained on
   EnergyPlus parametric simulations.
 </div>
 """, unsafe_allow_html=True)
