@@ -342,7 +342,7 @@ def predict_all(models, month, ww, rd, ori_deg, wwr):
 # ─────────────────────────────────────────────────────────────────────────────
 # GAUGE CHART
 # ─────────────────────────────────────────────────────────────────────────────
-def gauge(val, target):
+def gauge(val, target, text_color="#ffffff"):
     if target == "PMV":
         rng   = [-3, 3]
         steps = [
@@ -368,11 +368,11 @@ def gauge(val, target):
     fig = go.Figure(go.Indicator(
         mode  = "gauge+number",
         value = val,
-        number= dict(font=dict(size=26, color="#ffffff", family="Syne"),
+        number= dict(font=dict(size=26, color=text_color, family="Syne"),
                      suffix=suffix),
         gauge = dict(
             axis    = dict(range=rng, tickcolor="#2d3650",
-                           tickfont=dict(color="#a0aabf", size=7), nticks=7),
+                           tickfont=dict(color=text_color, size=7), nticks=7),
             bar     = dict(color="#f0a500", thickness=0.17),
             bgcolor = "rgba(0,0,0,0)", borderwidth=0,
             steps   = steps,
@@ -382,14 +382,14 @@ def gauge(val, target):
         height=120,
         margin=dict(t=5, b=0, l=5, r=5),
         paper_bgcolor="rgba(0,0,0,0)",
-        font_color="#ffffff",
+        font_color=text_color,
     )
     return fig
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INTERVAL CHART
 # ─────────────────────────────────────────────────────────────────────────────
-def interval_chart(results):
+def interval_chart(results, text_color="#ffffff", text_dim="#a0aabf", grid_color="#2d3650"):
     fig = make_subplots(rows=1, cols=2, horizontal_spacing=0.15,
                         subplot_titles=["PMV — 90% Interval", "PPD — 90% Interval"])
 
@@ -424,7 +424,7 @@ def interval_chart(results):
                 marker=dict(symbol="line-ns", size=14,
                             line=dict(color=color, width=2)),
                 text=[lbl], textposition="top center",
-                textfont=dict(size=8, color="#ffffff"),
+                textfont=dict(size=8, color=text_color),
                 showlegend=False, hoverinfo="skip",
             ), row=1, col=col)
 
@@ -442,16 +442,16 @@ def interval_chart(results):
         margin=dict(t=20, b=4, l=4, r=4),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font_color="#ffffff",
+        font_color=text_color,
         font_family="IBM Plex Mono",
     )
     for c in [1, 2]:
-        fig.update_xaxes(showgrid=True, gridcolor="#2d3650",
-                         tickfont=dict(size=7, color="#a0aabf"),
+        fig.update_xaxes(showgrid=True, gridcolor=grid_color,
+                         tickfont=dict(size=7, color=text_dim),
                          zeroline=False, row=1, col=c)
         fig.update_yaxes(visible=False, row=1, col=c)
     for ann in fig.layout.annotations:
-        ann.font.color = "#a0aabf"
+        ann.font.color = text_dim
         ann.font.size  = 8
     return fig
 
@@ -734,7 +734,7 @@ with col_res:
           <div class="big-val" style="color:{pmv_col};">{pmv:+.2f}</div>
           <span class="badge" style="color:{pmv_col};border-color:{pmv_col};">{pmv_lbl}</span>
         </div>""", unsafe_allow_html=True)
-        st.plotly_chart(gauge(pmv, "PMV"), use_container_width=True,
+        st.plotly_chart(gauge(pmv, "PMV", T['text']), use_container_width=True,
                         config={"displayModeBar": False})
 
     with r2:
@@ -745,30 +745,38 @@ with col_res:
           <div class="big-val" style="color:{ppd_col};">{ppd:.1f}%</div>
           <span class="badge" style="color:{ppd_col};border-color:{ppd_col};">{ppd_lbl}</span>
         </div>""", unsafe_allow_html=True)
-        st.plotly_chart(gauge(ppd, "PPD"), use_container_width=True,
+        st.plotly_chart(gauge(ppd, "PPD", T['text']), use_container_width=True,
                         config={"displayModeBar": False})
 
     # Intervals
     if has_qi:
         st.markdown('<div class="card-title" style="margin-top:3px;">~ 90% PREDICTION INTERVALS</div>',
                     unsafe_allow_html=True)
-        st.plotly_chart(interval_chart(results), use_container_width=True,
-                        config={"displayModeBar": False})
+        st.plotly_chart(interval_chart(results, T['text'], T['text_dim'], T['border']),
+                        use_container_width=True, config={"displayModeBar": False})
 
         ic1, ic2 = st.columns(2)
         with ic1:
             lo, med, hi = results["PMV_q05"], results["PMV_q50"], results["PMV_q95"]
             st.markdown(f"""
             <div class="interval-row">
-              PMV &nbsp;<b>{lo:+.2f}</b> → <b style="color:#f0a500;">{med:+.2f}</b> → <b>{hi:+.2f}</b><br>
-              <span style="color:#5a6480;">width</span> <b>{hi-lo:.2f}</b>
+              <span style="color:{T['text']};">PMV</span> &nbsp;
+              <b style="color:{T['text']};">{lo:+.2f}</b> &rarr;
+              <b style="color:#f0a500;">{med:+.2f}</b> &rarr;
+              <b style="color:{T['text']};">{hi:+.2f}</b><br>
+              <span style="color:{T['text_dim']};">width</span>
+              <b style="color:{T['text']};">{hi-lo:.2f}</b>
             </div>""", unsafe_allow_html=True)
         with ic2:
             lo, med, hi = results["PPD_q05"], results["PPD_q50"], results["PPD_q95"]
             st.markdown(f"""
             <div class="interval-row">
-              PPD &nbsp;<b>{lo:.1f}%</b> → <b style="color:#f0a500;">{med:.1f}%</b> → <b>{hi:.1f}%</b><br>
-              <span style="color:#5a6480;">width</span> <b>{hi-lo:.1f}%</b>
+              <span style="color:{T['text']};">PPD</span> &nbsp;
+              <b style="color:{T['text']};">{lo:.1f}%</b> &rarr;
+              <b style="color:#f0a500;">{med:.1f}%</b> &rarr;
+              <b style="color:{T['text']};">{hi:.1f}%</b><br>
+              <span style="color:{T['text_dim']};">width</span>
+              <b style="color:{T['text']};">{hi-lo:.1f}%</b>
             </div>""", unsafe_allow_html=True)
 
         st.markdown(f"""
